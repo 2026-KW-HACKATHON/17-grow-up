@@ -1,13 +1,9 @@
 .seoulpay-page {
   width: 100%;
-  max-width: 402px;
-  height: 100dvh;
+  max-width: 390px;
+  min-height: 100vh;
   margin: 0 auto;
-
   background: #ffffff;
-
-  box-sizing: border-box;
-  overflow: hidden;
 }
 
 /* 상단 헤더 */

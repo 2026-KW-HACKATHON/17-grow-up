@@ -1,17 +1,12 @@
 .point-page {
   width: 100%;
-  max-width: 402px;
-  height: 100dvh;
-
+  max-width: 390px;
+  min-height: 100vh;
   margin: 0 auto;
-
-  display: flex;
-  flex-direction: column;
-
   background: #ffffff;
+}
 
-  box-sizing: border-box;
-  overflow: hidden;
+.point-page__content {
 }
 
 .point-page__content {
@@ -19,6 +14,7 @@
   min-height: 0;
 
   padding: 49px 27px 23px;
+  padding-bottom: 90px;
 
   display: flex;
   flex-direction: column;
