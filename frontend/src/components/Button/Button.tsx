@@ -3,21 +3,11 @@ import './Button.css'
 interface ButtonProps {
   children: React.ReactNode
   onClick?: () => void
-  disabled?: boolean
 }
 
-function Button({
-  children,
-  onClick,
-  disabled = false,
-}: ButtonProps) {
+function Button({ children, onClick }: ButtonProps) {
   return (
-    <button
-      type="button"
-      className="common-button"
-      onClick={onClick}
-      disabled={disabled}
-    >
+    <button type="button" className="button" onClick={onClick}>
       {children}
     </button>
   )
