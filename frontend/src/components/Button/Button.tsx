@@ -1,14 +1,23 @@
-import type { ReactNode } from 'react'
 import './Button.css'
 
 interface ButtonProps {
-  children: ReactNode
+  children: React.ReactNode
   onClick?: () => void
+  disabled?: boolean
 }
 
-function Button({ children, onClick }: ButtonProps) {
+function Button({
+  children,
+  onClick,
+  disabled = false,
+}: ButtonProps) {
   return (
-    <button type="button" className="button" onClick={onClick}>
+    <button
+      type="button"
+      className="common-button"
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   )

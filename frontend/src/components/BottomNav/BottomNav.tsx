@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import './BottomNav.css'
 
 type NavItem = 'home' | 'mission' | 'record' | 'point' | 'my'
@@ -7,17 +6,15 @@ interface BottomNavProps {
   active: NavItem
 }
 
-const navItems: { key: NavItem; label: string; path: string }[] = [
-  { key: 'home', label: '홈', path: '/main' },
-  { key: 'mission', label: '미션', path: '/mission' },
-  { key: 'record', label: '기록', path: '/record' },
-  { key: 'point', label: '포인트', path: '/point' },
-  { key: 'my', label: 'MY', path: '/my' },
+const navItems: { key: NavItem; label: string }[] = [
+  { key: 'home', label: '홈' },
+  { key: 'mission', label: '미션' },
+  { key: 'record', label: '기록' },
+  { key: 'point', label: '포인트' },
+  { key: 'my', label: 'MY' },
 ]
 
 function BottomNav({ active }: BottomNavProps) {
-  const navigate = useNavigate()
-
   return (
     <nav className="bottom-nav">
       {navItems.map((item) => {
@@ -30,7 +27,6 @@ function BottomNav({ active }: BottomNavProps) {
             className={`bottom-nav__item ${
               isActive ? 'bottom-nav__item--active' : ''
             }`}
-            onClick={() => navigate(item.path)}
           >
             <img
               className="bottom-nav__icon"

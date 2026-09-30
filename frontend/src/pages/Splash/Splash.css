@@ -1,14 +1,18 @@
 .splash {
   width: 100%;
-  max-width: 390px;
-  min-height: 100vh;
-  margin: 0 auto;
-  background: #ffffff;
+  min-height: 100dvh;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  background: linear-gradient(
+    180deg,
+    #fffef8 0%,
+    #fbfff9 100%
+  );
 }
+
 .splash__logo {
   width: 66.4%;
   max-width: 267px;
