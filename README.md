@@ -1,19 +1,53 @@
-# 🌱 GrowUp 개발 문서
+# GrowUp
 
-그루업 프로젝트의 기획 및 설계 문서를 관리합니다.
+탄소중립 실천을 미션 형태로 기록하고, 탄소 감축량·포인트·캐릭터 성장을 통해 지속적인 친환경 실천을 돕는 서비스입니다.
 
-## 문서 목록
+## 기술 스택
 
-| 문서 | 설명 |
-|---|---|
-| [기능 명세서](requirements.md) | MVP 기능 및 서비스 정책 |
-| [ERD](erd.md) | 데이터베이스 설계 및 관계 |
-| [API 명세서](api-spec.md) | API 요청·응답 및 오류 코드 |
+### Backend
 
-## 문서 관리 규칙
+- Java 21
+- Spring Boot 4.1.1
+- Spring Data JPA
+- Spring Security
+- JWT
+- MySQL
+- Swagger / OpenAPI
+- Gradle
 
-- API 기본 경로는 `/api/v1`입니다.
-- ERD 변경 시 `erd.md`를 함께 수정합니다.
-- API 변경 시 `api-spec.md`를 갱신합니다.
-- 문서 변경 사항은 팀원에게 공유합니다.
-  
+### Frontend
+
+- React
+- TypeScript
+- Vite
+
+### Deployment
+
+- Frontend: Vercel
+- Backend: Railway
+- Database: MySQL
+
+## 주요 기능
+
+- 사용자 회원가입 / 로그인
+- JWT 기반 인증
+- 탄소중립 미션
+- QR 기반 미션 인증
+- 탄소 감축량 누적
+- 포인트 전환
+- 캐릭터 성장
+- 실천 기록 / 연속 실천
+- 친구 기능
+- 제휴처 및 제휴처 직원 기능
+
+## 문서
+
+- [백엔드 개발 안내](docs/backend.md)
+- [Git 컨벤션](docs/git-convention.md)
+- [프로젝트 구조](docs/architecture.md)
+
+## Swagger
+
+백엔드를 로컬에서 실행한 뒤 아래 주소에서 API를 확인할 수 있습니다.
+
+<http://localhost:8080/swagger-ui/index.html>
