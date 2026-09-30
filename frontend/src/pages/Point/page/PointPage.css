@@ -1,0 +1,164 @@
+.point-page {
+  width: 100%;
+  max-width: 402px;
+  height: 100dvh;
+
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.point-page__content {
+  flex: 1;
+  min-height: 0;
+
+  padding: 49px 27px 23px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+}
+
+.point-page__header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.point-page__title {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: #000000;
+}
+
+.point-page__seoulpay {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 120%;
+
+  color: rgba(0, 0, 0, 0.7);
+
+  cursor: pointer;
+}
+
+.point-page__seoulpay img {
+  width: 16px;
+  height: 16px;
+}
+
+.point-page__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin-top: 49px;
+}
+
+.point-page__balance {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.point-page__coin {
+  width: 40px;
+  height: 40px;
+
+  object-fit: contain;
+}
+
+.point-page__balance strong {
+  font-family: Pretendard, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: #000000;
+}
+
+.point-page__monthly {
+  margin: 11px 0 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: #a6a6a6;
+}
+
+.point-page__monthly span {
+  color: #298249;
+}
+
+.point-tabs {
+  margin-top: 38px;
+}
+
+.point-page__history {
+  flex: 1;
+  min-height: 0;
+
+  margin-top: 14px;
+  padding: 0 17px;
+
+  background: #ffffff;
+
+  border: 1px solid #f5f5f5;
+  border-radius: 12px;
+
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.point-page__history::-webkit-scrollbar {
+  display: none;
+}
+
+.point-page__empty {
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+
+  color: #a6a6a6;
+}
+
+.point-page > .bottom-nav {
+  flex-shrink: 0;
+}
