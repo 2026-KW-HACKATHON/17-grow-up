@@ -1,5 +1,6 @@
 package com.growup.backend.auth.dto;
 
+import com.growup.backend.global.validation.Utf8ByteLength;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -10,6 +11,7 @@ public record SignupRequest(
 
         @NotBlank(message = "비밀번호는 필수입니다.")
         @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
+        @Utf8ByteLength(max = 72, message = "비밀번호는 UTF-8 기준 72바이트 이하여야 합니다.")
         String password,
 
         @NotBlank(message = "닉네임은 필수입니다.")

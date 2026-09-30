@@ -12,7 +12,10 @@ import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import java.security.SecureRandom;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ public class AuthService {
     private static final char[] INVITE_CODE_CHARACTERS =
             "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
     private static final int INVITE_CODE_LENGTH = 8;
+    private static final String LOGIN_ID_UNIQUE_CONSTRAINT = "uk_users_login_id";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
@@ -45,7 +49,14 @@ public class AuthService {
                 CharacterType.random()
         );
 
-        return SignupResponse.from(userRepository.save(user));
+        try {
+            return SignupResponse.from(userRepository.saveAndFlush(user));
+        } catch (DataIntegrityViolationException exception) {
+            if (isLoginIdConstraintViolation(exception)) {
+                throw new BusinessException(ErrorCode.DUPLICATE_LOGIN_ID);
+            }
+            throw exception;
+        }
     }
 
     public AccessTokenResponse login(LoginRequest request) {
@@ -79,5 +90,30 @@ public class AuthService {
             );
         }
         return builder.toString();
+    }
+
+    private boolean isLoginIdConstraintViolation(DataIntegrityViolationException exception) {
+        Throwable cause = exception;
+        while (cause != null) {
+            if (cause instanceof ConstraintViolationException constraintViolationException) {
+                return isLoginIdConstraintName(constraintViolationException.getConstraintName());
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
+    private boolean isLoginIdConstraintName(String constraintName) {
+        if (constraintName == null) {
+            return false;
+        }
+
+        String normalizedName = constraintName
+                .replace("`", "")
+                .replace("\"", "")
+                .toLowerCase(Locale.ROOT);
+
+        return normalizedName.equals(LOGIN_ID_UNIQUE_CONSTRAINT)
+                || normalizedName.endsWith("." + LOGIN_ID_UNIQUE_CONSTRAINT);
     }
 }

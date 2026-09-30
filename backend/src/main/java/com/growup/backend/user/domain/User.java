@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -18,7 +19,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_login_id", columnNames = "login_id"),
+                @UniqueConstraint(name = "uk_users_invite_code", columnNames = "invite_code")
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
@@ -26,7 +33,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login_id", nullable = false, unique = true, length = 50)
+    @Column(name = "login_id", nullable = false, length = 50)
     private String loginId;
 
     @Column(name = "password_hash", nullable = false, length = 100)
@@ -35,7 +42,7 @@ public class User {
     @Column(nullable = false, length = 30)
     private String nickname;
 
-    @Column(name = "invite_code", nullable = false, unique = true, length = 12)
+    @Column(name = "invite_code", nullable = false, length = 12)
     private String inviteCode;
 
     @Enumerated(EnumType.STRING)

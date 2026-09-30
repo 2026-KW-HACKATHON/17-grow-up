@@ -3,6 +3,7 @@ package com.growup.backend.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import java.util.Optional;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +52,7 @@ class AuthServiceTest {
         when(userRepository.existsByLoginId(request.loginId())).thenReturn(false);
         when(userRepository.existsByInviteCode(any())).thenReturn(false);
         when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", 1L);
             return user;
@@ -58,7 +61,7 @@ class AuthServiceTest {
         SignupResponse response = authService.signup(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
+        verify(userRepository).saveAndFlush(userCaptor.capture());
         User savedUser = userCaptor.getValue();
 
         assertThat(response.userId()).isEqualTo(1L);
@@ -87,7 +90,45 @@ class AuthServiceTest {
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.DUPLICATE_LOGIN_ID);
 
-        verify(userRepository, never()).save(any());
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void signupMapsLoginIdConstraintViolationToDuplicateLoginId() {
+        SignupRequest request = new SignupRequest("growup", "password123", "새싹이");
+        ConstraintViolationException constraintViolation = mock(ConstraintViolationException.class);
+        when(constraintViolation.getConstraintName()).thenReturn("uk_users_login_id");
+        DataIntegrityViolationException databaseException =
+                new DataIntegrityViolationException("duplicate login id", constraintViolation);
+
+        when(userRepository.existsByLoginId(request.loginId())).thenReturn(false);
+        when(userRepository.existsByInviteCode(any())).thenReturn(false);
+        when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(databaseException);
+
+        assertThatThrownBy(() -> authService.signup(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.DUPLICATE_LOGIN_ID);
+
+        assertThat(ErrorCode.DUPLICATE_LOGIN_ID.getHttpStatus().value()).isEqualTo(409);
+    }
+
+    @Test
+    void signupDoesNotConvertUnrelatedConstraintViolation() {
+        SignupRequest request = new SignupRequest("growup", "password123", "새싹이");
+        ConstraintViolationException constraintViolation = mock(ConstraintViolationException.class);
+        when(constraintViolation.getConstraintName()).thenReturn("uk_users_invite_code");
+        DataIntegrityViolationException databaseException =
+                new DataIntegrityViolationException("duplicate invite code", constraintViolation);
+
+        when(userRepository.existsByLoginId(request.loginId())).thenReturn(false);
+        when(userRepository.existsByInviteCode(any())).thenReturn(false);
+        when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
+        when(userRepository.saveAndFlush(any(User.class))).thenThrow(databaseException);
+
+        assertThatThrownBy(() -> authService.signup(request))
+                .isSameAs(databaseException);
     }
 
     @Test

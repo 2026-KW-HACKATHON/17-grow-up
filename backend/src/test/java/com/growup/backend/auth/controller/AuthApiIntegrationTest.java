@@ -100,6 +100,48 @@ class AuthApiIntegrationTest {
     }
 
     @Test
+    void signupAcceptsPasswordThatIsExactly72Utf8Bytes() throws Exception {
+        String password = "가".repeat(24);
+
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "loginId": "utf8-limit",
+                                  "password": "%s",
+                                  "nickname": "새싹이"
+                                }
+                                """.formatted(password)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true));
+
+        User savedUser = userRepository.findByLoginId("utf8-limit").orElseThrow();
+        assertThat(passwordEncoder.matches(password, savedUser.getPasswordHash())).isTrue();
+    }
+
+    @Test
+    void signupRejectsMultibytePasswordOver72Utf8Bytes() throws Exception {
+        String password = "가".repeat(25);
+
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "loginId": "utf8-over-limit",
+                                  "password": "%s",
+                                  "nickname": "새싹이"
+                                }
+                                """.formatted(password)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.error.message")
+                        .value("비밀번호는 UTF-8 기준 72바이트 이하여야 합니다."));
+
+        assertThat(userRepository.existsByLoginId("utf8-over-limit")).isFalse();
+    }
+
+    @Test
     void loginWithUnknownIdReturnsInvalidLogin() throws Exception {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
