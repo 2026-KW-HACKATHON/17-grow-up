@@ -1,0 +1,240 @@
+.seoulpay-page {
+  width: 100%;
+  max-width: 402px;
+  height: 100dvh;
+  margin: 0 auto;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 상단 헤더 */
+.seoulpay-page__header {
+  height: 134px;
+
+  display: flex;
+  align-items: flex-end;
+
+  padding: 0 27px;
+
+  box-sizing: border-box;
+}
+
+/* 뒤로가기 버튼 */
+.seoulpay-page__back {
+  width: 24px;
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  flex-shrink: 0;
+
+  padding: 0;
+  margin: 0 1px 0 0;
+
+  border: none;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+/* 뒤로가기 아이콘 */
+.seoulpay-page__back img {
+  width: 19px;
+  height: 19px;
+
+  display: block;
+  object-fit: contain;
+
+  opacity: 0.4;
+}
+
+/* 페이지 제목 */
+.seoulpay-page__header h1 {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: #000000;
+
+  white-space: nowrap;
+}
+
+/* 메인 영역 */
+.seoulpay-page__content {
+  padding: 0 27px;
+
+  box-sizing: border-box;
+}
+
+/* 서울페이 소개 영역 */
+.seoulpay-page__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 서울페이 로고 */
+.seoulpay-page__logo {
+  width: 110px;
+  height: 110px;
+
+  margin-top: 80px;
+
+  display: block;
+  object-fit: contain;
+}
+
+/* 소개 문구 */
+.seoulpay-page__description {
+  width: 228px;
+
+  margin: 34px 0 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  font-family: Pretendard, sans-serif;
+  font-weight: 600;
+  line-height: 140%;
+
+  color: #000000;
+}
+
+.seoulpay-page__description span {
+  font-size: 16px;
+}
+
+.seoulpay-page__description strong {
+  font-size: 20px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* 포인트 정보 카드 */
+.seoulpay-page__point-card {
+  width: 100%;
+  height: 162px;
+
+  margin-top: 55px;
+  padding: 20px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid #f5f5f5;
+  border-radius: 12px;
+
+  box-sizing: border-box;
+}
+
+/* 전환 가능 포인트 */
+.seoulpay-page__available {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.seoulpay-page__available span {
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.seoulpay-page__available strong {
+  font-family: Pretendard, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -0.01em;
+
+  color: #000000;
+}
+
+/* 카드 내부 구분선 */
+.seoulpay-page__divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 14px 0;
+
+  background: #f5f5f5;
+}
+
+/* 전환 조건 */
+.seoulpay-page__condition {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.seoulpay-page__condition-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.seoulpay-page__condition-row span {
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 100%;
+
+  color: rgba(0, 0, 0, 0.3);
+}
+
+/* 오른쪽 포인트 숫자 */
+.seoulpay-page__condition-row strong {
+  font-family: Pretendard, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: 0;
+
+  text-align: right;
+
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* 전환 버튼 */
+.seoulpay-page__button {
+  width: 100%;
+
+  margin-top: 22px;
+}
+
+/* 하단 안내 문구 */
+.seoulpay-page__notice {
+  margin: 37px 0 0;
+
+  text-align: center;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: 0;
+
+  color: rgba(0, 0, 0, 0.3);
+
+  white-space: nowrap;
+}
