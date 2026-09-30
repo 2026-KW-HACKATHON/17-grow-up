@@ -239,3 +239,14 @@
 .record-page__friend-button:active {
   opacity: 0.9;
 }
+.record-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #ffffff;
+}
+
+.record-page__content {
+  padding-bottom: 90px;
+}
