@@ -15,11 +15,6 @@ const navItems: { key: NavItem; label: string; path: string }[] = [
   { key: 'my', label: 'MY', path: '/my' },
 ]
 
-const navPaths: Partial<Record<NavItem, string>> = {
-  point: '/point',
-  my: '/my',
-}
-
 function BottomNav({ active }: BottomNavProps) {
   const navigate = useNavigate()
 
