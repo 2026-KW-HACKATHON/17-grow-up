@@ -7,12 +7,12 @@ interface BottomNavProps {
   active: NavItem
 }
 
-const navItems: { key: NavItem; label: string }[] = [
-  { key: 'home', label: '홈' },
-  { key: 'mission', label: '미션' },
-  { key: 'record', label: '기록' },
-  { key: 'point', label: '포인트' },
-  { key: 'my', label: 'MY' },
+const navItems: { key: NavItem; label: string; path: string }[] = [
+  { key: 'home', label: '홈', path: '/main' },
+  { key: 'mission', label: '미션', path: '/mission' },
+  { key: 'record', label: '기록', path: '/record' },
+  { key: 'point', label: '포인트', path: '/point' },
+  { key: 'my', label: 'MY', path: '/my' },
 ]
 
 const navPaths: Partial<Record<NavItem, string>> = {
@@ -22,14 +22,6 @@ const navPaths: Partial<Record<NavItem, string>> = {
 
 function BottomNav({ active }: BottomNavProps) {
   const navigate = useNavigate()
-
-  const handleNavigate = (item: NavItem) => {
-    const path = navPaths[item]
-
-    if (path) {
-      navigate(path)
-    }
-  }
 
   return (
     <nav className="bottom-nav">
@@ -43,7 +35,7 @@ function BottomNav({ active }: BottomNavProps) {
             className={`bottom-nav__item ${
               isActive ? 'bottom-nav__item--active' : ''
             }`}
-            onClick={() => handleNavigate(item.key)}
+            onClick={() => navigate(item.path)}
           >
             <img
               className="bottom-nav__icon"
@@ -51,9 +43,7 @@ function BottomNav({ active }: BottomNavProps) {
               alt=""
             />
 
-            <span className="bottom-nav__label">
-              {item.label}
-            </span>
+            <span className="bottom-nav__label">{item.label}</span>
           </button>
         )
       })}

@@ -1,23 +1,15 @@
 .my-page {
   width: 100%;
-  max-width: 402px;
-  height: 100dvh;
-
+  max-width: 390px;
+  min-height: 100vh;
   margin: 0 auto;
-
-  display: flex;
-  flex-direction: column;
-
-  background: #fcfcf6;
-
-  box-sizing: border-box;
-  overflow: hidden;
+  background: #ffffff;
 }
 
 .my-page__content {
   flex: 1;
   min-height: 0;
-
+  padding-bottom: 90px;
   display: flex;
   flex-direction: column;
 
