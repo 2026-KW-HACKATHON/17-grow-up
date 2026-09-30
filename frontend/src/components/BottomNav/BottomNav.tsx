@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import './BottomNav.css'
 
 type NavItem = 'home' | 'mission' | 'record' | 'point' | 'my'
@@ -14,7 +15,22 @@ const navItems: { key: NavItem; label: string }[] = [
   { key: 'my', label: 'MY' },
 ]
 
+const navPaths: Partial<Record<NavItem, string>> = {
+  point: '/point',
+  my: '/my',
+}
+
 function BottomNav({ active }: BottomNavProps) {
+  const navigate = useNavigate()
+
+  const handleNavigate = (item: NavItem) => {
+    const path = navPaths[item]
+
+    if (path) {
+      navigate(path)
+    }
+  }
+
   return (
     <nav className="bottom-nav">
       {navItems.map((item) => {
@@ -27,6 +43,7 @@ function BottomNav({ active }: BottomNavProps) {
             className={`bottom-nav__item ${
               isActive ? 'bottom-nav__item--active' : ''
             }`}
+            onClick={() => handleNavigate(item.key)}
           >
             <img
               className="bottom-nav__icon"
@@ -34,7 +51,9 @@ function BottomNav({ active }: BottomNavProps) {
               alt=""
             />
 
-            <span className="bottom-nav__label">{item.label}</span>
+            <span className="bottom-nav__label">
+              {item.label}
+            </span>
           </button>
         )
       })}
