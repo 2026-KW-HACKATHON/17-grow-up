@@ -7,6 +7,7 @@ interface Mission {
   category: string
   point: number
   image: string
+  imageBackgroundColor: string
   recommended?: boolean
 }
 
@@ -26,6 +27,7 @@ const missions: Mission[] = [
     category: '카페',
     point: 50,
     image: '/tumbler.svg',
+    imageBackgroundColor: '#E9F4EC',
     recommended: true,
   },
   {
@@ -34,17 +36,31 @@ const missions: Mission[] = [
     category: '마트·편의점',
     point: 50,
     image: '/shopping-bag.svg',
+    imageBackgroundColor: '#FFF5E0',
   },
-]
-
-const activities: Activity[] = [
   {
-    id: 1,
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
+    id: 3,
+    title: '포장용기 사용하기',
+    category: '음식점',
     point: 50,
-    time: '오늘 14:32',
-    image: '/tumbler.svg',
+    image: '/container.svg',
+    imageBackgroundColor: '#EDF3FC',
+  },
+  {
+    id: 4,
+    title: '음식 남기지 않기',
+    category: '음식점',
+    point: 50,
+    image: '/empty-plate.svg',
+    imageBackgroundColor: '#FCE8E5',
+  },
+  {
+    id: 5,
+    title: '일회용품 사용 줄이기',
+    category: '생활',
+    point: 50,
+    image: '/no-disposable.svg',
+    imageBackgroundColor: '#DFE5FB',
   },
 ]
 
@@ -56,6 +72,17 @@ const weekdays = [
   { label: '금', completed: true },
   { label: '토', completed: false },
   { label: '일', completed: false },
+]
+
+const activities: Activity[] = [
+  {
+    id: 1,
+    title: '텀블러 사용하기',
+    place: '월계동 그린커피',
+    point: 50,
+    time: '오늘 14:32',
+    image: '/tumbler.svg',
+  },
 ]
 
 function MainPage() {
@@ -75,6 +102,12 @@ function MainPage() {
         </header>
 
         <section className="main-page__growth-card">
+          <img
+            className="main-page__growth-background"
+            src="/home-header.svg"
+            alt=""
+          />
+
           <div className="main-page__growth-text">
             <span className="main-page__level">Lv.2</span>
 
@@ -92,14 +125,7 @@ function MainPage() {
               <span>다음 성장까지 120P</span>
             </div>
           </div>
-
-          <img
-            className="main-page__growth-character"
-            src="/home-character.svg"
-            alt="성장 캐릭터"
-          />
         </section>
-
         <section className="main-page__summary">
           <button type="button" className="main-page__summary-card">
             <img src="/point-coin.svg" alt="" />
@@ -131,6 +157,7 @@ function MainPage() {
           <div className="main-page__streak-header">
             <div>
               <span className="main-page__fire">🔥</span>
+
               <strong>
                 <em>5일</em> 연속 실천 중이에요!
               </strong>
@@ -170,17 +197,24 @@ function MainPage() {
           </div>
 
           <div className="main-page__mission-list">
-            {missions.map((mission) => (
+            {missions.slice(0, 2).map((mission) => (
               <button
                 type="button"
                 key={mission.id}
                 className="main-page__mission-card"
               >
-                {mission.recommended && (
-                  <span className="main-page__recommend">추천</span>
-                )}
+                <div
+                  className="main-page__mission-image-box"
+                  style={{
+                    backgroundColor: mission.imageBackgroundColor,
+                  }}
+                >
+                  {mission.recommended && (
+                    <span className="main-page__recommend">추천</span>
+                  )}
 
-                <img src={mission.image} alt="" />
+                  <img src={mission.image} alt="" />
+                </div>
 
                 <div className="main-page__mission-info">
                   <strong>{mission.title}</strong>
