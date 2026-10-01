@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/users/**").hasRole(Role.USER.name())
+                        .requestMatchers("/api/v1/missions/**").hasRole(Role.USER.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
