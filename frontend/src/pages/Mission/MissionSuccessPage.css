@@ -4,16 +4,16 @@
   min-height: 100vh;
   margin: 0 auto;
 
-  background: #ffffff;
+  background: #fcfcf6;
   color: #111111;
 }
 
 .mission-success-page__content {
-  padding: 52px 24px 100px;
+  padding: 54px 28px 100px;
   box-sizing: border-box;
 }
 
-/* 상단 */
+/* HEADER */
 
 .mission-success-page__header {
   text-align: center;
@@ -22,111 +22,128 @@
 .mission-success-page__header h1 {
   margin: 0;
 
-  font-size: 25px;
+  color: #2f6f3e;
+
+  font-size: 26px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .mission-success-page__header p {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
 
-  color: #888888;
+  color: #8a8a8a;
 
   font-size: 13px;
   font-weight: 500;
-  line-height: 1.5;
 }
 
-/* 캐릭터 */
+/* CHARACTER */
 
 .mission-success-page__character-box {
-  width: 180px;
-  height: 180px;
+  width: 220px;
+  height: 220px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  margin: 28px auto 0;
-
-  border-radius: 50%;
+  margin: 22px auto 0;
 }
 
 .mission-success-page__character-box img {
-  width: 135px;
-  height: 135px;
+  width: 210px;
+  height: 210px;
 
+  display: block;
   object-fit: contain;
 }
 
-/* 결과 */
+/* RESULT */
 
 .mission-success-page__result {
-  margin-top: 30px;
-
+  margin-top: 12px;
   padding: 8px 18px;
 
   border: 1px solid #eeeeee;
   border-radius: 14px;
 
   background: #ffffff;
+
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
 }
 
 .mission-success-page__result-item {
-  min-height: 58px;
+  min-height: 70px;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+
+  gap: 14px;
 }
 
-.mission-success-page__result-item span {
-  color: #777777;
+.mission-success-page__result-icon {
+  width: 38px;
+  height: 38px;
 
-  font-size: 13px;
-  font-weight: 600;
+  flex-shrink: 0;
+
+  object-fit: contain;
 }
 
-.mission-success-page__result-item strong {
+.mission-success-page__result-text {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.mission-success-page__result-text span {
   color: #111111;
 
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.mission-success-page__result-item .mission-success-page__point {
+.mission-success-page__result-text strong {
   color: #4d8b59;
+
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .mission-success-page__divider {
   height: 1px;
+
+  margin-left: 52px;
+
   background: #eeeeee;
 }
 
-/* 연속 실천 */
+/* STREAK */
 
 .mission-success-page__streak {
   display: flex;
   align-items: center;
-  gap: 10px;
 
-  margin-top: 18px;
-  padding: 14px 16px;
+  gap: 12px;
 
-  border: 1px solid #eeeeee;
-  border-radius: 14px;
+  margin-top: 20px;
+  padding: 8px 16px;
 
-  background: #ffffff;
+  background: transparent;
 }
 
 .mission-success-page__fire {
-  font-size: 26px;
+  font-size: 30px;
 }
 
 .mission-success-page__streak > div {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+
+  gap: 4px;
 }
 
 .mission-success-page__streak strong {
@@ -148,13 +165,13 @@
   font-size: 11px;
 }
 
-/* 버튼 */
+/* BUTTON */
 
 .mission-success-page__button {
   width: 100%;
   height: 52px;
 
-  margin-top: 22px;
+  margin-top: 20px;
 
   border: 0;
   border-radius: 12px;

@@ -32,7 +32,7 @@ function MissionDetailPage() {
           <p>{mission.description}</p>
         </section>
 
-        <MissionProcess />
+        <MissionProcess image={mission.image} title={mission.title} />
 
         <section className="mission-detail-page__info-card">
           <div className="mission-detail-page__info-row">

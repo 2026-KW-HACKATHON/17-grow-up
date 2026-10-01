@@ -18,38 +18,40 @@ function MissionSuccessPage() {
       <main className="mission-success-page__content">
         <section className="mission-success-page__header">
           <h1>실천 완료!</h1>
-
-          <p>
-            오늘도 초록빛 실천을
-            <br />
-            완료했어요.
-          </p>
+          <p>오늘도 슬기롭게 변화를 만들었어요</p>
         </section>
 
-        <section
-          className="mission-success-page__character-box"
-          style={{
-            backgroundColor: mission.backgroundColor,
-          }}
-        >
-          <img src={mission.image} alt={mission.title} />
+        <section className="mission-success-page__character-box">
+          <img src="/qr-success-character.svg" alt="미션 완료 캐릭터" />
         </section>
 
         <section className="mission-success-page__result">
           <div className="mission-success-page__result-item">
-            <span>획득 포인트</span>
+            <img
+              className="mission-success-page__result-icon"
+              src="/point-coin.svg"
+              alt=""
+            />
 
-            <strong className="mission-success-page__point">
-              +{mission.point}P
-            </strong>
+            <div className="mission-success-page__result-text">
+              <span>획득 포인트</span>
+              <strong>+{mission.point}P</strong>
+            </div>
           </div>
 
           <div className="mission-success-page__divider" />
 
           <div className="mission-success-page__result-item">
-            <span>탄소 감축량</span>
+            <img
+              className="mission-success-page__result-icon"
+              src="/carbon-icon.svg"
+              alt=""
+            />
 
-            <strong>+{mission.carbon}g CO₂e</strong>
+            <div className="mission-success-page__result-text">
+              <span>탄소 감축량</span>
+              <strong>+{mission.carbon}g CO₂e</strong>
+            </div>
           </div>
         </section>
 
@@ -61,7 +63,7 @@ function MissionSuccessPage() {
               <em>5일</em> 연속 실천 중이에요!
             </strong>
 
-            <span>내일도 함께 실천해 봐요.</span>
+            <span>꾸준한 실천이 멋져요!</span>
           </div>
         </section>
 
@@ -70,7 +72,7 @@ function MissionSuccessPage() {
           className="mission-success-page__button"
           onClick={() => navigate('/mission')}
         >
-          미션 목록으로
+          목록으로
         </button>
       </main>
 

@@ -43,14 +43,20 @@
 }
 
 .mission-page__partner-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   width: 54px;
   height: 54px;
 
-  font-size: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mission-page__partner-icon img {
+  width: 54px;
+  height: 54px;
+
+  display: block;
+  object-fit: contain;
 }
 
 .mission-page__partner-text {

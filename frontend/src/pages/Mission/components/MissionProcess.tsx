@@ -1,6 +1,11 @@
 import './MissionProcess.css'
 
-function MissionProcess() {
+interface MissionProcessProps {
+  image: string
+  title: string
+}
+
+function MissionProcess({ image, title }: MissionProcessProps) {
   return (
     <section className="mission-process">
       <h2>이렇게 실천해요</h2>
@@ -8,13 +13,13 @@ function MissionProcess() {
       <div className="mission-process__content">
         <div className="mission-process__step">
           <div className="mission-process__icon">
-            <span>🥤</span>
+            <img src={image} alt={title} />
           </div>
 
           <p>
-            음료 주문 시
+            미션 실천 후
             <br />
-            텀블러 제시
+            직원에게 보여주세요
           </p>
         </div>
 
@@ -22,7 +27,7 @@ function MissionProcess() {
 
         <div className="mission-process__step">
           <div className="mission-process__icon">
-            <span>▦</span>
+            <img src="/qr-image.svg" alt="QR 인증" />
           </div>
 
           <p>

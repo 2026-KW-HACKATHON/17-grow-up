@@ -3,7 +3,7 @@
 }
 
 .mission-process h2 {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
 
   font-size: 15px;
   font-weight: 700;
@@ -11,7 +11,7 @@
 
 .mission-process__content {
   display: grid;
-  grid-template-columns: 1fr 32px 1fr;
+  grid-template-columns: 1fr 40px 1fr;
   align-items: center;
 }
 
@@ -28,9 +28,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
+.mission-process__icon img {
+  width: 42px;
+  height: 42px;
+
+  display: block;
+  object-fit: contain;
+}
+
+.mission-process__arrow {
   color: #4d8b59;
-  font-size: 34px;
+
+  font-size: 23px;
+  text-align: center;
 }
 
 .mission-process__step p {
@@ -39,13 +51,6 @@
   color: #666666;
 
   font-size: 12px;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.mission-process__arrow {
-  color: #4d8b59;
-
-  font-size: 22px;
+  line-height: 1.45;
   text-align: center;
 }

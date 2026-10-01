@@ -16,7 +16,9 @@ function MissionPage() {
         </header>
 
         <section className="mission-page__partner">
-          <div className="mission-page__partner-icon">🏪</div>
+          <div className="mission-page__partner-icon">
+            <img src="/store-image.svg" alt="" />
+          </div>
 
           <div className="mission-page__partner-text">
             <strong>우리 동네 제휴 매장</strong>
