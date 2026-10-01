@@ -1,0 +1,51 @@
+.mission-process {
+  margin-top: 28px;
+}
+
+.mission-process h2 {
+  margin: 0 0 18px;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mission-process__content {
+  display: grid;
+  grid-template-columns: 1fr 32px 1fr;
+  align-items: center;
+}
+
+.mission-process__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mission-process__icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4d8b59;
+  font-size: 34px;
+}
+
+.mission-process__step p {
+  margin: 8px 0 0;
+
+  color: #666666;
+
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mission-process__arrow {
+  color: #4d8b59;
+
+  font-size: 22px;
+  text-align: center;
+}

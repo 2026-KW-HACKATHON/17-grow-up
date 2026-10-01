@@ -1,0 +1,169 @@
+.mission-success-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+
+  background: #ffffff;
+  color: #111111;
+}
+
+.mission-success-page__content {
+  padding: 52px 24px 100px;
+  box-sizing: border-box;
+}
+
+/* 상단 */
+
+.mission-success-page__header {
+  text-align: center;
+}
+
+.mission-success-page__header h1 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.mission-success-page__header p {
+  margin: 10px 0 0;
+
+  color: #888888;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* 캐릭터 */
+
+.mission-success-page__character-box {
+  width: 180px;
+  height: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 28px auto 0;
+
+  border-radius: 50%;
+}
+
+.mission-success-page__character-box img {
+  width: 135px;
+  height: 135px;
+
+  object-fit: contain;
+}
+
+/* 결과 */
+
+.mission-success-page__result {
+  margin-top: 30px;
+
+  padding: 8px 18px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.mission-success-page__result-item {
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mission-success-page__result-item span {
+  color: #777777;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mission-success-page__result-item strong {
+  color: #111111;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.mission-success-page__result-item .mission-success-page__point {
+  color: #4d8b59;
+}
+
+.mission-success-page__divider {
+  height: 1px;
+  background: #eeeeee;
+}
+
+/* 연속 실천 */
+
+.mission-success-page__streak {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 18px;
+  padding: 14px 16px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.mission-success-page__fire {
+  font-size: 26px;
+}
+
+.mission-success-page__streak > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mission-success-page__streak strong {
+  color: #111111;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mission-success-page__streak strong em {
+  color: #4d8b59;
+
+  font-style: normal;
+}
+
+.mission-success-page__streak div > span {
+  color: #999999;
+
+  font-size: 11px;
+}
+
+/* 버튼 */
+
+.mission-success-page__button {
+  width: 100%;
+  height: 52px;
+
+  margin-top: 22px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: #4d8b59;
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+}

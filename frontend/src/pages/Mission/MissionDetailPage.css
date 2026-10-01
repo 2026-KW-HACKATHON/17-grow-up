@@ -1,0 +1,130 @@
+.mission-detail-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+
+  background: #ffffff;
+  color: #111111;
+}
+
+.mission-detail-page__content {
+  padding: 36px 20px 96px;
+  box-sizing: border-box;
+}
+
+/* 상단 이미지 */
+
+.mission-detail-page__image-box {
+  width: 100%;
+  height: 128px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+.mission-detail-page__image-box img {
+  width: 118px;
+  height: 118px;
+
+  object-fit: contain;
+}
+
+/* 제목 + 설명 */
+
+.mission-detail-page__intro {
+  margin-top: 24px;
+}
+
+.mission-detail-page__intro h1 {
+  margin: 0;
+
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.mission-detail-page__intro p {
+  margin: 18px 0 0;
+
+  color: #4d8b59;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.55;
+
+  white-space: pre-line;
+}
+
+/* 정보 카드 */
+
+.mission-detail-page__info-card {
+  margin-top: 30px;
+
+  padding: 6px 18px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.mission-detail-page__info-row {
+  min-height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.mission-detail-page__info-row span {
+  flex-shrink: 0;
+
+  color: #111111;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mission-detail-page__info-row strong {
+  color: #111111;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-align: right;
+}
+
+.mission-detail-page__divider {
+  height: 1px;
+  background: #eeeeee;
+}
+
+/* QR 인증 버튼 */
+
+.mission-detail-page__qr-button {
+  width: 100%;
+  height: 52px;
+
+  margin-top: 24px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: #4d8b59;
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
