@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/BottomNav/BottomNav'
 import './MainPage.css'
 
@@ -7,7 +8,7 @@ interface Mission {
   category: string
   point: number
   image: string
-  imageBackgroundColor: string
+  backgroundColor: string
   recommended?: boolean
 }
 
@@ -27,40 +28,16 @@ const missions: Mission[] = [
     category: '카페',
     point: 50,
     image: '/tumbler.svg',
-    imageBackgroundColor: '#E9F4EC',
+    backgroundColor: '#E9F4EC',
     recommended: true,
   },
   {
     id: 2,
     title: '장바구니 사용하기',
-    category: '마트·편의점',
+    category: '마트 · 편의점',
     point: 50,
     image: '/shopping-bag.svg',
-    imageBackgroundColor: '#FFF5E0',
-  },
-  {
-    id: 3,
-    title: '포장용기 사용하기',
-    category: '음식점',
-    point: 50,
-    image: '/container.svg',
-    imageBackgroundColor: '#EDF3FC',
-  },
-  {
-    id: 4,
-    title: '음식 남기지 않기',
-    category: '음식점',
-    point: 50,
-    image: '/empty-plate.svg',
-    imageBackgroundColor: '#FCE8E5',
-  },
-  {
-    id: 5,
-    title: '일회용품 사용 줄이기',
-    category: '생활',
-    point: 50,
-    image: '/no-disposable.svg',
-    imageBackgroundColor: '#DFE5FB',
+    backgroundColor: '#FFF5E0',
   },
 ]
 
@@ -86,18 +63,33 @@ const activities: Activity[] = [
 ]
 
 function MainPage() {
+  const navigate = useNavigate()
+
   return (
     <div className="main-page">
       <main className="main-page__content">
         <header className="main-page__header">
-          <img
-            className="main-page__logo"
-            src="/growup-logo.svg"
-            alt="그루업"
-          />
+          <div className="main-page__brand">
+            <img
+              className="main-page__logo"
+              src="/growup-logo.svg"
+              alt="그루업"
+            />
 
-          <button type="button" className="main-page__profile-button">
-            <img src="/profile-character.svg" alt="프로필 캐릭터" />
+            <p className="main-page__description">
+              오늘의 작은 실천이,
+              <br />
+              월계1동의 초록 일상을 키워요
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="main-page__profile-button"
+            onClick={() => navigate('/my')}
+            aria-label="마이페이지로 이동"
+          >
+            <img src="/profile-character.svg" alt="" />
           </button>
         </header>
 
@@ -109,7 +101,7 @@ function MainPage() {
           />
 
           <div className="main-page__growth-text">
-            <span className="main-page__level">Lv.2</span>
+            <span className="main-page__level">Lv. 2</span>
 
             <h1>
               조금씩, 더 푸르게
@@ -118,16 +110,27 @@ function MainPage() {
             </h1>
 
             <div className="main-page__progress">
-              <div className="main-page__progress-bar">
-                <div className="main-page__progress-value" />
+              <div className="main-page__progress-row">
+                <div className="main-page__progress-icon">
+                  <img src="/carbon-icon-white.svg" alt="" />
+                </div>
+
+                <div className="main-page__progress-bar">
+                  <div className="main-page__progress-value" />
+                </div>
               </div>
 
               <span>다음 성장까지 120P</span>
             </div>
           </div>
         </section>
+
         <section className="main-page__summary">
-          <button type="button" className="main-page__summary-card">
+          <button
+            type="button"
+            className="main-page__summary-card"
+            onClick={() => navigate('/point')}
+          >
             <img src="/point-coin.svg" alt="" />
 
             <div>
@@ -138,19 +141,16 @@ function MainPage() {
             <span className="main-page__chevron">›</span>
           </button>
 
-          <button type="button" className="main-page__summary-card">
+          <div className="main-page__summary-card">
             <img src="/carbon-icon.svg" alt="" />
 
             <div>
               <span>누적 탄소 감축량</span>
               <strong>
-                12.8
-                <small> kg CO₂e</small>
+                12.8 <small>kg CO₂e</small>
               </strong>
             </div>
-
-            <span className="main-page__chevron">›</span>
-          </button>
+          </div>
         </section>
 
         <section className="main-page__streak-card">
@@ -163,7 +163,7 @@ function MainPage() {
               </strong>
             </div>
 
-            <button type="button">
+            <button type="button" onClick={() => navigate('/record')}>
               이번 주 5일 실천했어요
               <span>›</span>
             </button>
@@ -190,40 +190,47 @@ function MainPage() {
           <div className="main-page__section-header">
             <h2>오늘의 미션</h2>
 
-            <button type="button">
+            <button type="button" onClick={() => navigate('/mission')}>
               전체 보기
               <span>›</span>
             </button>
           </div>
 
           <div className="main-page__mission-list">
-            {missions.slice(0, 2).map((mission) => (
+            {missions.map((mission) => (
               <button
-                type="button"
                 key={mission.id}
+                type="button"
                 className="main-page__mission-card"
+                style={{
+                  backgroundColor: mission.backgroundColor,
+                }}
+                onClick={() => navigate('/mission')}
               >
-                <div
-                  className="main-page__mission-image-box"
-                  style={{
-                    backgroundColor: mission.imageBackgroundColor,
-                  }}
-                >
-                  {mission.recommended && (
-                    <span className="main-page__recommend">추천</span>
-                  )}
+                {mission.recommended && (
+                  <span className="main-page__recommend">추천</span>
+                )}
+
+                <div className="main-page__mission-image">
+                  <div className="main-page__mission-shadow" />
 
                   <img src={mission.image} alt="" />
                 </div>
 
-                <div className="main-page__mission-info">
-                  <strong>{mission.title}</strong>
-                  <span>{mission.category}</span>
-                </div>
+                <div className="main-page__mission-text">
+                  <div className="main-page__mission-title-row">
+                    <strong>{mission.title}</strong>
 
-                <div className="main-page__mission-bottom">
-                  <span>🟡 {mission.point}</span>
-                  <span>›</span>
+                    <span className="main-page__mission-point">
+                      <img src="/point-coin.svg" alt="" />
+                      {mission.point}
+                    </span>
+                  </div>
+
+                  <div className="main-page__mission-bottom-row">
+                    <span>{mission.category}</span>
+                    <span className="main-page__mission-arrow">›</span>
+                  </div>
                 </div>
               </button>
             ))}
@@ -234,7 +241,7 @@ function MainPage() {
           <div className="main-page__section-header">
             <h2>최근 활동</h2>
 
-            <button type="button">
+            <button type="button" onClick={() => navigate('/record')}>
               전체 보기
               <span>›</span>
             </button>
@@ -242,7 +249,12 @@ function MainPage() {
 
           <div className="main-page__activity-list">
             {activities.map((activity) => (
-              <div key={activity.id} className="main-page__activity-item">
+              <button
+                key={activity.id}
+                type="button"
+                className="main-page__activity-item"
+                onClick={() => navigate('/record')}
+              >
                 <div className="main-page__activity-icon">
                   <img src={activity.image} alt="" />
                 </div>
@@ -256,7 +268,7 @@ function MainPage() {
                   <strong>+{activity.point}P</strong>
                   <span>{activity.time}</span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </section>

@@ -14,45 +14,25 @@ function MyPage() {
           />
 
           <div className="my-page__profile-info">
-            <strong className="my-page__name">
-              김탄탄
-            </strong>
+            <strong className="my-page__name">김탄탄</strong>
 
-            <button
-              type="button"
-              className="my-page__edit-button"
-            >
+            <button type="button" className="my-page__edit-button">
               프로필 수정
             </button>
           </div>
         </section>
 
         <section className="my-page__settings">
-          <h1 className="my-page__settings-title">
-            MY 설정
-          </h1>
+          <h1 className="my-page__settings-title">MY 설정</h1>
 
           <div className="my-page__settings-card">
-            <MyMenuItem
-              icon="/user.svg"
-              label="사용자 정보"
-            />
+            <MyMenuItem icon="/user.svg" label="사용자 정보" />
 
-            <MyMenuItem
-              icon="/friend.svg"
-              label="친구 관리"
-            />
+            <MyMenuItem icon="/friend.svg" label="친구 관리" />
 
-            <MyMenuItem
-              icon="/history.svg"
-              label="나의 기록"
-            />
+            <MyMenuItem icon="/history.svg" label="나의 기록" />
 
-            <MyMenuItem
-              icon="/logout.svg"
-              label="로그아웃"
-              isLast
-            />
+            <MyMenuItem icon="/logout.svg" label="로그아웃" isLast />
           </div>
         </section>
       </main>
