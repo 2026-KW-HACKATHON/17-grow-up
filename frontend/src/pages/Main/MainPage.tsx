@@ -89,7 +89,7 @@ function MainPage() {
             onClick={() => navigate('/my')}
             aria-label="마이페이지로 이동"
           >
-            <img src="/profile-character.svg" alt="" />
+            <img src="/profile-character.svg" alt="프로필 캐릭터" />
           </button>
         </header>
 
@@ -112,7 +112,7 @@ function MainPage() {
             <div className="main-page__progress">
               <div className="main-page__progress-row">
                 <div className="main-page__progress-icon">
-                  <img src="/carbon-icon-white.svg" alt="" />
+                  <img src="/carbon-icon-white  .svg" alt="" />
                 </div>
 
                 <div className="main-page__progress-bar">

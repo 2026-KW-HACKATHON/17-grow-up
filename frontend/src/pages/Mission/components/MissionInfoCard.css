@@ -1,0 +1,78 @@
+.mission-info-card {
+  width: 100%;
+  min-height: 90px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.mission-info-card__image-box {
+  width: 78px;
+  height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  flex-shrink: 0;
+}
+
+.mission-info-card__image-box img {
+  width: 56px;
+  height: 56px;
+
+  object-fit: contain;
+}
+
+.mission-info-card__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  margin-left: 12px;
+}
+
+.mission-info-card__content strong {
+  color: #111111;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mission-info-card__content > span {
+  margin-top: 2px;
+
+  color: #8d8d8d;
+
+  font-size: 11px;
+}
+
+.mission-info-card__point {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  margin-top: 6px;
+}
+
+.mission-info-card__point img {
+  width: 13px;
+  height: 13px;
+}
+
+.mission-info-card__point span {
+  color: #111111;
+
+  font-size: 10px;
+  font-weight: 700;
+}
