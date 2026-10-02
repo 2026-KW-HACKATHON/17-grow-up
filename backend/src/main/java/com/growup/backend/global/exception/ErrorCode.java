@@ -12,6 +12,9 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "올바르지 않은 닉네임입니다."),
 
+    CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 친구로 추가할 수 없습니다."),
+    FRIEND_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 친구로 등록된 사용자입니다."),
+
     MISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "미션을 찾을 수 없습니다."),
     MISSION_ALREADY_COMPLETED(HttpStatus.CONFLICT, "오늘 이미 완료한 미션입니다."),
 
