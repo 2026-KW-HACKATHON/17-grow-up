@@ -112,14 +112,23 @@ class VerificationApiIntegrationTest {
     }
 
     @Test
-    void expiredQrTokenReturnsInvalidQrToken() throws Exception {
+    void expiredQrTokenReturnsExpiredQrToken() throws Exception {
         JwtTokenProvider expiredQrTokenProvider = new JwtTokenProvider(
                 TEST_SECRET,
                 3_600L,
                 -1L
         );
 
-        expectInvalidQrToken(expiredQrTokenProvider.createQrToken(1L));
+        mockMvc.perform(post("/api/v1/verifications")
+                        .header(HttpHeaders.AUTHORIZATION, partnerBearerToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(verificationBody(
+                                expiredQrTokenProvider.createQrToken(1L),
+                                1L
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("EXPIRED_QR_TOKEN"));
     }
 
     @Test

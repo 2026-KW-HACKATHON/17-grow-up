@@ -11,6 +11,7 @@ import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import com.growup.backend.verification.dto.VerificationRequest;
 import com.growup.backend.verification.dto.VerificationResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -82,6 +83,8 @@ public class VerificationService {
     private Long extractQrUserId(String qrToken) {
         try {
             return jwtTokenProvider.getQrAccountId(qrToken);
+        } catch (ExpiredJwtException exception) {
+            throw new BusinessException(ErrorCode.EXPIRED_QR_TOKEN);
         } catch (JwtException | IllegalArgumentException exception) {
             throw new BusinessException(ErrorCode.INVALID_QR_TOKEN);
         }
