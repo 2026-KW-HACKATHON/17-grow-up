@@ -2,6 +2,7 @@ package com.growup.backend.user.controller;
 
 import com.growup.backend.global.response.ApiResponse;
 import com.growup.backend.global.security.AuthPrincipal;
+import com.growup.backend.user.dto.QrTokenResponse;
 import com.growup.backend.user.dto.UpdateNicknameRequest;
 import com.growup.backend.user.dto.UpdateNicknameResponse;
 import com.growup.backend.user.dto.UserMeResponse;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+
+    @PostMapping("/me/qr")
+    public ApiResponse<QrTokenResponse> issueQrToken(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ApiResponse.success(userService.issueQrToken(principal.accountId()));
+    }
 
     @GetMapping("/me")
     public ApiResponse<UserMeResponse> getMyInfo(

@@ -3,6 +3,7 @@ package com.growup.backend.global.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -47,6 +48,10 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/me/qr")
+                        .hasRole(Role.USER.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/verifications")
+                        .hasRole(Role.PARTNER.name())
                         .requestMatchers("/api/v1/users/**").hasRole(Role.USER.name())
                         .requestMatchers("/api/v1/missions/**").hasRole(Role.USER.name())
                         .anyRequest().authenticated()
