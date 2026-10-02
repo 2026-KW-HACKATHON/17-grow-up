@@ -19,16 +19,20 @@ public class JwtTokenProvider {
 
     private static final String ACCOUNT_ID_CLAIM = "accountId";
     private static final String ROLE_CLAIM = "role";
+    private static final String TOKEN_TYPE_CLAIM = "tokenType";
 
     private final SecretKey secretKey;
     private final long accessTokenExpirationSeconds;
+    private final long qrTokenExpirationSeconds;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String encodedSecret,
-            @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds
+            @Value("${jwt.access-token-expiration-seconds}") long accessTokenExpirationSeconds,
+            @Value("${jwt.qr-token-expiration-seconds}") long qrTokenExpirationSeconds
     ) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(encodedSecret));
         this.accessTokenExpirationSeconds = accessTokenExpirationSeconds;
+        this.qrTokenExpirationSeconds = qrTokenExpirationSeconds;
     }
 
     public String createAccessToken(Long accountId, Role role) {
@@ -38,6 +42,20 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .claim(ACCOUNT_ID_CLAIM, accountId)
                 .claim(ROLE_CLAIM, role.name())
+                .claim(TOKEN_TYPE_CLAIM, JwtTokenType.ACCESS.name())
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(expiresAt))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String createQrToken(Long accountId) {
+        Instant issuedAt = Instant.now();
+        Instant expiresAt = issuedAt.plusSeconds(qrTokenExpirationSeconds);
+
+        return Jwts.builder()
+                .claim(ACCOUNT_ID_CLAIM, accountId)
+                .claim(TOKEN_TYPE_CLAIM, JwtTokenType.QR.name())
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiresAt))
                 .signWith(secretKey)
@@ -46,6 +64,7 @@ public class JwtTokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
+        validateTokenType(claims, JwtTokenType.ACCESS);
         Long accountId = getAccountId(claims);
         Role role = Role.valueOf(claims.get(ROLE_CLAIM, String.class));
         AuthPrincipal principal = new AuthPrincipal(accountId, role);
@@ -55,6 +74,12 @@ public class JwtTokenProvider {
                 null,
                 List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
         );
+    }
+
+    public Long getQrAccountId(String token) {
+        Claims claims = parseClaims(token);
+        validateTokenType(claims, JwtTokenType.QR);
+        return getAccountId(claims);
     }
 
     public long getAccessTokenExpirationSeconds() {
@@ -67,6 +92,13 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    private void validateTokenType(Claims claims, JwtTokenType expectedType) {
+        String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+        if (!expectedType.name().equals(tokenType)) {
+            throw new IllegalArgumentException("JWT 용도가 올바르지 않습니다.");
+        }
     }
 
     private Long getAccountId(Claims claims) {

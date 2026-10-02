@@ -21,3 +21,4 @@ server:
 jwt:
   secret: ${JWT_SECRET}
   access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS:3600}
+  qr-token-expiration-seconds: ${JWT_QR_TOKEN_EXPIRATION_SECONDS:300}

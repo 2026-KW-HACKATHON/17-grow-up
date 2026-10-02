@@ -3,6 +3,7 @@ package com.growup.backend.user.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import com.jayway.jsonpath.JsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -149,6 +151,41 @@ class UserApiIntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, partnerToken))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+    }
+
+    @Test
+    void userIssuesQrTokenContainingOwnAccountId() throws Exception {
+        User user = saveUser(0L);
+
+        String responseBody = mockMvc.perform(post("/api/v1/users/me/qr")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.qrToken").isNotEmpty())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String qrToken = JsonPath.read(responseBody, "$.data.qrToken");
+        assertThat(jwtTokenProvider.getQrAccountId(qrToken)).isEqualTo(user.getId());
+    }
+
+    @Test
+    void unauthenticatedUserCannotIssueQrToken() throws Exception {
+        mockMvc.perform(post("/api/v1/users/me/qr"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    void partnerCannotIssueUserQrToken() throws Exception {
+        String partnerToken = BEARER_PREFIX
+                + jwtTokenProvider.createAccessToken(1L, Role.PARTNER);
+
+        mockMvc.perform(post("/api/v1/users/me/qr")
+                        .header(HttpHeaders.AUTHORIZATION, partnerToken))
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
 

@@ -19,8 +19,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class SecurityIntegrationTest {
 
+    private static final String TEST_SECRET =
+            "dGVzdC1qd3Qtc2VjcmV0LWtleS10aGF0LWlzLWF0LWxlYXN0LTMyLWJ5dGVzLWxvbmc=";
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     private JwtAccessDeniedHandler accessDeniedHandler;
@@ -44,6 +50,33 @@ class SecurityIntegrationTest {
     }
 
     @Test
+    void qrTokenCannotBeUsedAsAuthorizationToken() throws Exception {
+        String qrToken = jwtTokenProvider.createQrToken(1L);
+
+        expectUnauthorized(qrToken);
+    }
+
+    @Test
+    void tamperedAccessTokenReturnsUnauthorized() throws Exception {
+        String accessToken = jwtTokenProvider.createAccessToken(1L, Role.USER);
+        String tamperedToken = accessToken.substring(0, accessToken.length() - 1)
+                + (accessToken.endsWith("a") ? "b" : "a");
+
+        expectUnauthorized(tamperedToken);
+    }
+
+    @Test
+    void expiredAccessTokenReturnsUnauthorized() throws Exception {
+        JwtTokenProvider expiredTokenProvider = new JwtTokenProvider(
+                TEST_SECRET,
+                -1L,
+                300L
+        );
+
+        expectUnauthorized(expiredTokenProvider.createAccessToken(1L, Role.USER));
+    }
+
+    @Test
     void accessDeniedHandlerReturnsCommonForbiddenResponse() throws Exception {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -59,5 +92,13 @@ class SecurityIntegrationTest {
                 "\"code\":\"FORBIDDEN\"",
                 "접근 권한이 없습니다."
         );
+    }
+
+    private void expectUnauthorized(String token) throws Exception {
+        mockMvc.perform(get("/api/v1/users/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
 }
