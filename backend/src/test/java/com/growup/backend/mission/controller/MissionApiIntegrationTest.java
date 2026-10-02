@@ -8,7 +8,15 @@ import com.growup.backend.global.security.JwtTokenProvider;
 import com.growup.backend.global.security.Role;
 import com.growup.backend.mission.domain.Mission;
 import com.growup.backend.mission.domain.MissionCategory;
+import com.growup.backend.mission.domain.MissionCompletion;
+import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.user.domain.CharacterType;
+import com.growup.backend.user.domain.User;
+import com.growup.backend.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +31,7 @@ class MissionApiIntegrationTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
     private static final Long ACCOUNT_ID = 1L;
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,11 +40,24 @@ class MissionApiIntegrationTest {
     private MissionRepository missionRepository;
 
     @Autowired
+    private MissionCompletionRepository missionCompletionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @BeforeEach
     void cleanDatabase() {
+        missionCompletionRepository.deleteAll();
         missionRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    @AfterEach
+    void cleanUp() {
+        cleanDatabase();
     }
 
     @Test
@@ -166,6 +188,70 @@ class MissionApiIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
 
+    @Test
+    void missionListReflectsOnlyCurrentUsersCompletionsToday() throws Exception {
+        User currentUser = saveUser("current-user", "INVITE01");
+        User otherUser = saveUser("other-user", "INVITE02");
+        Mission completedMission = saveMission(
+                "텀블러 사용",
+                "일회용 컵 대신 텀블러를 사용합니다.",
+                MissionCategory.REUSABLE,
+                230L,
+                true
+        );
+        Mission incompleteMission = saveMission(
+                "장바구니 사용",
+                "비닐봉지 대신 장바구니를 사용합니다.",
+                MissionCategory.REUSABLE,
+                47L,
+                true
+        );
+        saveCompletion(currentUser, completedMission, LocalDate.now(KST_ZONE_ID));
+        saveCompletion(otherUser, incompleteMission, LocalDate.now(KST_ZONE_ID));
+
+        mockMvc.perform(get("/api/v1/missions")
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                userBearerToken(currentUser.getId())
+                        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].missionId").value(completedMission.getId()))
+                .andExpect(jsonPath("$.data[0].completedToday").value(true))
+                .andExpect(jsonPath("$.data[1].missionId").value(incompleteMission.getId()))
+                .andExpect(jsonPath("$.data[1].completedToday").value(false));
+    }
+
+    @Test
+    void missionDetailReflectsCompletedAndIncompleteStatusToday() throws Exception {
+        User user = saveUser("current-user", "INVITE01");
+        Mission completedMission = saveMission(
+                "텀블러 사용",
+                "일회용 컵 대신 텀블러를 사용합니다.",
+                MissionCategory.REUSABLE,
+                230L,
+                true
+        );
+        Mission incompleteMission = saveMission(
+                "장바구니 사용",
+                "비닐봉지 대신 장바구니를 사용합니다.",
+                MissionCategory.REUSABLE,
+                47L,
+                true
+        );
+        saveCompletion(user, completedMission, LocalDate.now(KST_ZONE_ID));
+        String token = userBearerToken(user.getId());
+
+        mockMvc.perform(get("/api/v1/missions/{missionId}", completedMission.getId())
+                        .header(HttpHeaders.AUTHORIZATION, token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.completedToday").value(true));
+
+        mockMvc.perform(get("/api/v1/missions/{missionId}", incompleteMission.getId())
+                        .header(HttpHeaders.AUTHORIZATION, token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.completedToday").value(false));
+    }
+
     private Mission saveMission(
             String name,
             String description,
@@ -178,7 +264,27 @@ class MissionApiIntegrationTest {
         );
     }
 
+    private User saveUser(String loginId, String inviteCode) {
+        return userRepository.saveAndFlush(User.create(
+                loginId,
+                "hashed-password",
+                loginId,
+                inviteCode,
+                CharacterType.TREE_A
+        ));
+    }
+
+    private void saveCompletion(User user, Mission mission, LocalDate completedDate) {
+        missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(user, mission, completedDate)
+        );
+    }
+
     private String userBearerToken() {
-        return BEARER_PREFIX + jwtTokenProvider.createAccessToken(ACCOUNT_ID, Role.USER);
+        return userBearerToken(ACCOUNT_ID);
+    }
+
+    private String userBearerToken(Long accountId) {
+        return BEARER_PREFIX + jwtTokenProvider.createAccessToken(accountId, Role.USER);
     }
 }
