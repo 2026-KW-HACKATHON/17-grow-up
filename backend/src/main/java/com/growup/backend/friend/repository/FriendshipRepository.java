@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     List<Friendship> findAllByUserId(Long userId);
+
+    boolean existsByUserIdAndFriendId(Long userId, Long friendId);
 }

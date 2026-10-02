@@ -1,9 +1,14 @@
 package com.growup.backend.friend.service;
 
+import com.growup.backend.friend.domain.Friendship;
+import com.growup.backend.friend.dto.FriendAddRequest;
+import com.growup.backend.friend.dto.FriendAddResponse;
 import com.growup.backend.friend.dto.FriendInviteResponse;
 import com.growup.backend.friend.dto.FriendListResponse;
 import com.growup.backend.friend.dto.FriendResponse;
 import com.growup.backend.friend.repository.FriendshipRepository;
+import com.growup.backend.global.exception.BusinessException;
+import com.growup.backend.global.exception.ErrorCode;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import java.util.List;
@@ -39,5 +44,33 @@ public class FriendService {
         String inviteUrl = inviteBaseUrl + "/" + user.getInviteCode();
 
         return new FriendInviteResponse(inviteUrl);
+    }
+
+    @Transactional
+    public FriendAddResponse addFriend(Long userId, FriendAddRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        User friend = userRepository.findByInviteCode(request.inviteCode())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getId().equals(friend.getId())) {
+            throw new BusinessException(ErrorCode.CANNOT_ADD_SELF);
+        }
+
+        if (friendshipRepository.existsByUserIdAndFriendId(
+                user.getId(),
+                friend.getId()
+        )) {
+            throw new BusinessException(ErrorCode.FRIEND_ALREADY_EXISTS);
+        }
+
+        Friendship userToFriend = Friendship.create(user, friend);
+        Friendship friendToUser = Friendship.create(friend, user);
+
+        friendshipRepository.save(userToFriend);
+        friendshipRepository.save(friendToUser);
+
+        return FriendAddResponse.from(friend);
     }
 }
