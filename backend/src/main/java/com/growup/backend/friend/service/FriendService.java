@@ -73,4 +73,14 @@ public class FriendService {
 
         return FriendAddResponse.from(friend);
     }
+
+    @Transactional
+    public void deleteFriend(Long userId, Long friendId) {
+        if (!friendshipRepository.existsByUserIdAndFriendId(userId, friendId)) {
+            throw new BusinessException(ErrorCode.FRIEND_NOT_FOUND);
+        }
+
+        friendshipRepository.deleteByUserIdAndFriendId(userId, friendId);
+        friendshipRepository.deleteByUserIdAndFriendId(friendId, userId);
+    }
 }

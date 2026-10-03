@@ -14,6 +14,7 @@ public enum ErrorCode {
 
     CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 친구로 추가할 수 없습니다."),
     FRIEND_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 친구로 등록된 사용자입니다."),
+    FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "친구 관계를 찾을 수 없습니다."),
 
     MISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "미션을 찾을 수 없습니다."),
     MISSION_ALREADY_COMPLETED(HttpStatus.CONFLICT, "오늘 이미 완료한 미션입니다."),
