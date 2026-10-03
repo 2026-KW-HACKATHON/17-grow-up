@@ -9,7 +9,9 @@ import com.growup.backend.global.response.ApiResponse;
 import com.growup.backend.global.security.AuthPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,5 +50,15 @@ public class FriendController {
         return ApiResponse.success(
                 friendService.addFriend(principal.accountId(), request)
         );
+    }
+
+    @DeleteMapping("/{friendId}")
+    public ApiResponse<Void> deleteFriend(
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @PathVariable Long friendId
+    ) {
+        friendService.deleteFriend(principal.accountId(), friendId);
+
+        return ApiResponse.success(null);
     }
 }
