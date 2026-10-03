@@ -2,6 +2,7 @@ package com.growup.backend.record.controller;
 
 import com.growup.backend.global.response.ApiResponse;
 import com.growup.backend.global.security.AuthPrincipal;
+import com.growup.backend.record.dto.FriendRecordListResponse;
 import com.growup.backend.record.dto.RecordCalendarResponse;
 import com.growup.backend.record.dto.RecordHistoryResponse;
 import com.growup.backend.record.dto.RecordSummaryResponse;
@@ -50,6 +51,15 @@ public class RecordController {
                         year,
                         month
                 )
+        );
+    }
+
+    @GetMapping("/friends")
+    public ApiResponse<FriendRecordListResponse> getFriendRecords(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ApiResponse.success(
+                recordService.getFriendRecords(principal.accountId())
         );
     }
 }
