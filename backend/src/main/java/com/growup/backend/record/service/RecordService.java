@@ -1,9 +1,12 @@
 package com.growup.backend.record.service;
 
+import com.growup.backend.friend.repository.FriendshipRepository;
 import com.growup.backend.global.exception.BusinessException;
 import com.growup.backend.global.exception.ErrorCode;
 import com.growup.backend.mission.domain.MissionCompletion;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
+import com.growup.backend.record.dto.FriendRecordListResponse;
+import com.growup.backend.record.dto.FriendRecordResponse;
 import com.growup.backend.record.dto.RecordCalendarDayResponse;
 import com.growup.backend.record.dto.RecordCalendarResponse;
 import com.growup.backend.record.dto.RecordHistoryItemResponse;
@@ -27,6 +30,7 @@ public class RecordService {
 
     private final UserRepository userRepository;
     private final MissionCompletionRepository missionCompletionRepository;
+    private final FriendshipRepository friendshipRepository;
 
     public RecordSummaryResponse getSummary(Long userId) {
         User user = userRepository.findById(userId)
@@ -89,5 +93,27 @@ public class RecordService {
                 month,
                 practiceDays
         );
+    }
+
+    public FriendRecordListResponse getFriendRecords(Long userId) {
+        List<FriendRecordResponse> friends = friendshipRepository.findAllByUserId(userId)
+                .stream()
+                .map(friendship -> {
+                    User friend = friendship.getFriend();
+
+                    long totalMissionCount =
+                            missionCompletionRepository.countByUserId(friend.getId());
+
+                    return new FriendRecordResponse(
+                            friend.getId(),
+                            friend.getNickname(),
+                            friend.getTotalCarbonG(),
+                            totalMissionCount,
+                            friend.getCurrentStreak()
+                    );
+                })
+                .toList();
+
+        return new FriendRecordListResponse(friends);
     }
 }
