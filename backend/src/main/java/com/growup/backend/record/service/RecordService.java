@@ -2,13 +2,20 @@ package com.growup.backend.record.service;
 
 import com.growup.backend.global.exception.BusinessException;
 import com.growup.backend.global.exception.ErrorCode;
+import com.growup.backend.mission.domain.MissionCompletion;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
+import com.growup.backend.record.dto.RecordCalendarDayResponse;
+import com.growup.backend.record.dto.RecordCalendarResponse;
 import com.growup.backend.record.dto.RecordHistoryItemResponse;
 import com.growup.backend.record.dto.RecordHistoryResponse;
 import com.growup.backend.record.dto.RecordSummaryResponse;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,5 +49,45 @@ public class RecordService {
                         .toList();
 
         return new RecordHistoryResponse(records);
+    }
+
+    public RecordCalendarResponse getCalendar(Long userId, int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<MissionCompletion> completions =
+                missionCompletionRepository
+                        .findAllByUserIdAndCompletedDateBetweenOrderByCompletedDateAsc(
+                                userId,
+                                startDate,
+                                endDate
+                        );
+
+        Map<LocalDate, Long> missionCountByDate = new LinkedHashMap<>();
+
+        for (MissionCompletion completion : completions) {
+            LocalDate date = completion.getCompletedDate();
+
+            missionCountByDate.put(
+                    date,
+                    missionCountByDate.getOrDefault(date, 0L) + 1
+            );
+        }
+
+        List<RecordCalendarDayResponse> practiceDays = missionCountByDate.entrySet()
+                .stream()
+                .map(entry -> new RecordCalendarDayResponse(
+                        entry.getKey(),
+                        entry.getValue()
+                ))
+                .toList();
+
+        return new RecordCalendarResponse(
+                year,
+                month,
+                practiceDays
+        );
     }
 }
