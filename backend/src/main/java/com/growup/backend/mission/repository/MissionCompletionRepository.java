@@ -25,4 +25,6 @@ public interface MissionCompletionRepository extends JpaRepository<MissionComple
             @Param("userId") Long userId,
             @Param("completedDate") LocalDate completedDate
     );
+
+    long countByUserId(Long userId);
 }
