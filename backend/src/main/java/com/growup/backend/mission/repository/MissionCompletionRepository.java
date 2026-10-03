@@ -27,4 +27,6 @@ public interface MissionCompletionRepository extends JpaRepository<MissionComple
     );
 
     long countByUserId(Long userId);
+
+    List<MissionCompletion> findAllByUserIdOrderByCompletedAtDesc(Long userId);
 }

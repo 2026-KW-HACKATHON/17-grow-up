@@ -2,6 +2,7 @@ package com.growup.backend.record.controller;
 
 import com.growup.backend.global.response.ApiResponse;
 import com.growup.backend.global.security.AuthPrincipal;
+import com.growup.backend.record.dto.RecordHistoryResponse;
 import com.growup.backend.record.dto.RecordSummaryResponse;
 import com.growup.backend.record.service.RecordService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,15 @@ public class RecordController {
     ) {
         return ApiResponse.success(
                 recordService.getSummary(principal.accountId())
+        );
+    }
+
+    @GetMapping("/history")
+    public ApiResponse<RecordHistoryResponse> getHistory(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ApiResponse.success(
+                recordService.getHistory(principal.accountId())
         );
     }
 }
