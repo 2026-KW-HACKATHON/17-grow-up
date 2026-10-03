@@ -29,4 +29,10 @@ public interface MissionCompletionRepository extends JpaRepository<MissionComple
     long countByUserId(Long userId);
 
     List<MissionCompletion> findAllByUserIdOrderByCompletedAtDesc(Long userId);
+
+    List<MissionCompletion> findAllByUserIdAndCompletedDateBetweenOrderByCompletedDateAsc(
+            Long userId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }
