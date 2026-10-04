@@ -58,14 +58,25 @@ function MainPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="main-page__profile-button"
-            onClick={() => navigate('/my')}
-            aria-label="마이페이지로 이동"
-          >
-            <img src="/profile-character.svg" alt="프로필 캐릭터" />
-          </button>
+          <div className="main-page__header-actions">
+            <button
+              type="button"
+              className="main-page__alarm-button"
+              onClick={() => navigate('/alarm')}
+              aria-label="알림창으로 이동"
+            >
+              <img src="/alarm-icon.svg" alt="알림" />
+            </button>
+
+            <button
+              type="button"
+              className="main-page__profile-button"
+              onClick={() => navigate('/my')}
+              aria-label="마이페이지로 이동"
+            >
+              <img src="/profile-character.svg" alt="프로필 캐릭터" />
+            </button>
+          </div>
         </header>
 
         <section className="main-page__growth-card">
