@@ -1,17 +1,8 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/BottomNav/BottomNav'
+import { missions } from '../Mission/data/missionData'
 import './MainPage.css'
-
-interface Mission {
-  id: number
-  title: string
-  category: string
-  point: number
-  image: string
-  backgroundColor: string
-  recommended?: boolean
-}
-
 interface Activity {
   id: number
   title: string
@@ -20,26 +11,6 @@ interface Activity {
   time: string
   image: string
 }
-
-const missions: Mission[] = [
-  {
-    id: 1,
-    title: '텀블러 사용하기',
-    category: '카페',
-    point: 50,
-    image: '/tumbler.svg',
-    backgroundColor: '#E9F4EC',
-    recommended: true,
-  },
-  {
-    id: 2,
-    title: '장바구니 사용하기',
-    category: '마트 · 편의점',
-    point: 50,
-    image: '/shopping-bag.svg',
-    backgroundColor: '#FFF5E0',
-  },
-]
 
 const weekdays = [
   { label: '월', completed: true },
@@ -64,6 +35,10 @@ const activities: Activity[] = [
 
 function MainPage() {
   const navigate = useNavigate()
+
+  const randomMissions = useMemo(() => {
+    return [...missions].sort(() => Math.random() - 0.5).slice(0, 2)
+  }, [])
 
   return (
     <div className="main-page">
@@ -112,7 +87,7 @@ function MainPage() {
             <div className="main-page__progress">
               <div className="main-page__progress-row">
                 <div className="main-page__progress-icon">
-                  <img src="/carbon-icon-white  .svg" alt="" />
+                  <img src="/carbon-icon-white.svg" alt="" />
                 </div>
 
                 <div className="main-page__progress-bar">
@@ -197,7 +172,7 @@ function MainPage() {
           </div>
 
           <div className="main-page__mission-list">
-            {missions.map((mission) => (
+            {randomMissions.map((mission, index) => (
               <button
                 key={mission.id}
                 type="button"
@@ -205,15 +180,14 @@ function MainPage() {
                 style={{
                   backgroundColor: mission.backgroundColor,
                 }}
-                onClick={() => navigate('/mission')}
+                onClick={() => navigate(`/mission/${mission.id}`)}
               >
-                {mission.recommended && (
+                {index === 0 && (
                   <span className="main-page__recommend">추천</span>
                 )}
 
                 <div className="main-page__mission-image">
                   <div className="main-page__mission-shadow" />
-
                   <img src={mission.image} alt="" />
                 </div>
 
