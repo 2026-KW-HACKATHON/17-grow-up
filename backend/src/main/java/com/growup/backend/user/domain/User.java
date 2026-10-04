@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -101,6 +102,32 @@ public class User {
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void completeMission(long carbonReductionG, LocalDate completedDate) {
+        LocalDate completionDate = Objects.requireNonNull(
+                completedDate,
+                "completedDate는 필수입니다."
+        );
+        if (carbonReductionG < 0) {
+            throw new IllegalArgumentException("carbonReductionG는 0 이상이어야 합니다.");
+        }
+
+        totalCarbonG += carbonReductionG;
+        convertibleCarbonG += carbonReductionG;
+
+        if (lastPracticeDate == null) {
+            currentStreak = 1;
+        } else if (completionDate.equals(lastPracticeDate.plusDays(1))) {
+            currentStreak++;
+        } else if (completionDate.isAfter(lastPracticeDate)) {
+            currentStreak = 1;
+        }
+
+        longestStreak = Math.max(longestStreak, currentStreak);
+        if (lastPracticeDate == null || completionDate.isAfter(lastPracticeDate)) {
+            lastPracticeDate = completionDate;
+        }
     }
 
     @PrePersist
