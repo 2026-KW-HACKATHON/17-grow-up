@@ -10,7 +10,7 @@ interface Friend {
   lastActive: string
 }
 
-const friends: Friend[] = [
+const initialFriends: Friend[] = [
   {
     id: 1,
     nickname: '홍길동',
@@ -27,17 +27,31 @@ const friends: Friend[] = [
 
 function FriendAddPage() {
   const navigate = useNavigate()
+
   const [copied, setCopied] = useState(false)
+  const [friends, setFriends] = useState<Friend[]>(initialFriends)
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
 
   const inviteLink = 'https://wolgye1rowoon.app/invite/1234'
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteLink)
+
     setCopied(true)
 
     setTimeout(() => {
       setCopied(false)
     }, 1500)
+  }
+
+  const handleDeleteFriend = () => {
+    if (!selectedFriend) return
+
+    setFriends((prevFriends) =>
+      prevFriends.filter((friend) => friend.id !== selectedFriend.id),
+    )
+
+    setSelectedFriend(null)
   }
 
   return (
@@ -54,6 +68,7 @@ function FriendAddPage() {
 
         <header className="friend-add-page__header">
           <h1 className="friend-add-page__title">친구 초대하기</h1>
+
           <p className="friend-add-page__subtitle">
             함께 실천하면 더 즐거워요!
           </p>
@@ -65,6 +80,7 @@ function FriendAddPage() {
 
         <section className="friend-add-page__invite-card">
           <h2>초대 링크를 공유해 보세요</h2>
+
           <p>
             친구가 가입하면 함께 슬기로운 일상을
             <br />
@@ -98,11 +114,49 @@ function FriendAddPage() {
                   <strong>{friend.streak}일 연속 실천 중</strong>
                   <span>{friend.lastActive}</span>
                 </div>
+
+                <button
+                  type="button"
+                  className="friend-add-page__friend-delete"
+                  onClick={() => setSelectedFriend(friend)}
+                  aria-label={`${friend.nickname} 친구 삭제`}
+                >
+                  <img src="/friend-delete.svg" alt="" />
+                </button>
               </div>
             ))}
           </div>
         </section>
       </main>
+
+      {selectedFriend && (
+        <div className="friend-add-page__modal-overlay">
+          <div className="friend-add-page__modal">
+            <h2>친구 삭제</h2>
+
+            <p>
+              <strong>{selectedFriend.nickname}</strong> 님을 친구 목록에서
+              삭제할까요?
+            </p>
+
+            <button
+              type="button"
+              className="friend-add-page__modal-delete"
+              onClick={handleDeleteFriend}
+            >
+              삭제
+            </button>
+
+            <button
+              type="button"
+              className="friend-add-page__modal-cancel"
+              onClick={() => setSelectedFriend(null)}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
 
       <BottomNav active="record" />
     </div>
