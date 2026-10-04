@@ -99,7 +99,7 @@ class VerificationServiceTest {
 
     private void prepareSuccessfulLookup() {
         when(jwtTokenProvider.getQrAccountId(request.qrToken())).thenReturn(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(user));
         when(missionRepository.findByIdAndActiveTrue(request.missionId()))
                 .thenReturn(Optional.of(mission));
         when(missionCompletionRepository.existsByUserIdAndMissionIdAndCompletedDate(
