@@ -99,6 +99,10 @@ public class User {
         return user;
     }
 
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     @PrePersist
     private void prePersist() {
         LocalDateTime now = LocalDateTime.now();
