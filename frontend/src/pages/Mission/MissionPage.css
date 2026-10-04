@@ -29,6 +29,7 @@
   grid-template-columns: 66px 1fr auto;
   align-items: center;
 
+  width: 100%;
   min-height: 96px;
 
   margin-top: 24px;
@@ -40,6 +41,9 @@
   background: #ffffff;
 
   box-sizing: border-box;
+
+  text-align: left;
+  cursor: pointer;
 }
 
 .mission-page__partner-icon {
@@ -52,8 +56,8 @@
 }
 
 .mission-page__partner-icon img {
-  width: 54px;
-  height: 54px;
+  width: 80px;
+  height: 70px;
 
   display: block;
   object-fit: contain;
@@ -66,19 +70,17 @@
 }
 
 .mission-page__partner-text strong {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
 }
 
 .mission-page__partner-text span {
   color: #999999;
-
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .mission-page__partner-arrow {
   color: #999999;
-
   font-size: 22px;
 }
 

@@ -1,9 +1,11 @@
 import BottomNav from '../../components/BottomNav/BottomNav'
 import MissionCard from './components/MissionCard'
 import { missions } from './data/missionData'
+import { useNavigate } from 'react-router-dom'
 import './MissionPage.css'
 
 function MissionPage() {
+  const navigate = useNavigate()
   return (
     <div className="mission-page">
       <main className="mission-page__content">
@@ -15,7 +17,11 @@ function MissionPage() {
           </h1>
         </header>
 
-        <section className="mission-page__partner">
+        <button
+          type="button"
+          className="mission-page__partner"
+          onClick={() => navigate('/stores')}
+        >
           <div className="mission-page__partner-icon">
             <img src="/store-image.svg" alt="" />
           </div>
@@ -26,7 +32,7 @@ function MissionPage() {
           </div>
 
           <span className="mission-page__partner-arrow">›</span>
-        </section>
+        </button>
 
         <section className="mission-page__list-section">
           <h2>미션 목록</h2>
