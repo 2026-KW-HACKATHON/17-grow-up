@@ -69,9 +69,11 @@ public class VerificationService {
 
         MissionCompletion completion = MissionCompletion.create(user, mission, today);
         try {
-            return VerificationResponse.from(
-                    missionCompletionRepository.saveAndFlush(completion)
+            MissionCompletion savedCompletion = missionCompletionRepository.saveAndFlush(
+                    completion
             );
+            user.completeMission(mission.getCarbonReductionG(), today);
+            return VerificationResponse.from(savedCompletion);
         } catch (DataIntegrityViolationException exception) {
             if (isCompletionUniqueConstraintViolation(exception)) {
                 throw new BusinessException(ErrorCode.MISSION_ALREADY_COMPLETED);

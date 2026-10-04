@@ -1,5 +1,6 @@
 package com.growup.backend.verification.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -79,6 +80,9 @@ class VerificationServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.MISSION_ALREADY_COMPLETED);
+        assertThat(user.getTotalCarbonG()).isZero();
+        assertThat(user.getConvertibleCarbonG()).isZero();
+        assertThat(user.getCurrentStreak()).isZero();
     }
 
     @Test

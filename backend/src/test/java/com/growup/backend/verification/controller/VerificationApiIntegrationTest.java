@@ -100,6 +100,13 @@ class VerificationApiIntegrationTest {
         assertThat(completion.getUser().getId()).isEqualTo(user.getId());
         assertThat(completion.getMission().getId()).isEqualTo(mission.getId());
         assertThat(completion.getCompletedDate()).isEqualTo(responseDate);
+
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(updatedUser.getTotalCarbonG()).isEqualTo(230L);
+        assertThat(updatedUser.getConvertibleCarbonG()).isEqualTo(230L);
+        assertThat(updatedUser.getCurrentStreak()).isEqualTo(1);
+        assertThat(updatedUser.getLongestStreak()).isEqualTo(1);
+        assertThat(updatedUser.getLastPracticeDate()).isEqualTo(responseDate);
     }
 
     @Test
