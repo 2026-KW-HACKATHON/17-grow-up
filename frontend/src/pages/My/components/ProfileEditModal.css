@@ -1,0 +1,172 @@
+.profile-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.profile-edit-modal {
+  width: 352px;
+  min-height: 520px;
+
+  padding: 48px 44px 46px;
+
+  background: #ffffff;
+  border-radius: 20px;
+
+  box-sizing: border-box;
+}
+
+.profile-edit-modal__title {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -0.02em;
+
+  color: #000000;
+}
+
+.profile-edit-modal__section {
+  margin-top: 43px;
+}
+
+.profile-edit-modal__label {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 100%;
+
+  color: #000000;
+}
+
+.profile-edit-modal__photo-row {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-edit-modal__character {
+  width: 86px;
+  height: 86px;
+
+  display: block;
+  object-fit: contain;
+}
+
+.profile-edit-modal__change-button {
+  min-width: 84px;
+  height: 35px;
+
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #298249;
+  border-radius: 60px;
+
+  background: #ffffff;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+
+  color: #000000;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+}
+
+.profile-edit-modal__nickname-section {
+  margin-top: 43px;
+}
+
+.profile-edit-modal__nickname-row {
+  min-height: 35px;
+
+  margin-top: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-edit-modal__nickname {
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+
+  color: #333333;
+}
+
+.profile-edit-modal__nickname-input {
+  width: 115px;
+  height: 32px;
+
+  padding: 0 6px;
+
+  border: none;
+  border-bottom: 1px solid #298249;
+  outline: none;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+
+  color: #333333;
+
+  box-sizing: border-box;
+}
+
+.profile-edit-modal__actions {
+  margin-top: 58px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.profile-edit-modal__save,
+.profile-edit-modal__cancel {
+  width: 158px;
+  height: 44px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 12px;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+}
+
+.profile-edit-modal__save {
+  background: #298249;
+}
+
+.profile-edit-modal__cancel {
+  background: #d0d0d0;
+}
