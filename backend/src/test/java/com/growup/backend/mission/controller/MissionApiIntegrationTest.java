@@ -67,6 +67,7 @@ class MissionApiIntegrationTest {
                 "일회용 컵 대신 텀블러를 사용합니다.",
                 MissionCategory.REUSABLE,
                 230L,
+                500L,
                 true
         );
         Mission foodWaste = saveMission(
@@ -74,6 +75,7 @@ class MissionApiIntegrationTest {
                 "먹을 만큼만 담고 음식을 남기지 않습니다.",
                 MissionCategory.FOOD_WASTE,
                 5L,
+                100L,
                 true
         );
 
@@ -86,10 +88,12 @@ class MissionApiIntegrationTest {
                 .andExpect(jsonPath("$.data[0].name").value("텀블러 사용"))
                 .andExpect(jsonPath("$.data[0].category").value("REUSABLE"))
                 .andExpect(jsonPath("$.data[0].carbonReductionG").value(230))
+                .andExpect(jsonPath("$.data[0].rewardPoints").value(500))
                 .andExpect(jsonPath("$.data[0].completedToday").value(false))
                 .andExpect(jsonPath("$.data[1].missionId").value(foodWaste.getId()))
                 .andExpect(jsonPath("$.data[1].category").value("FOOD_WASTE"))
                 .andExpect(jsonPath("$.data[1].carbonReductionG").value(5))
+                .andExpect(jsonPath("$.data[1].rewardPoints").value(100))
                 .andExpect(jsonPath("$.data[1].completedToday").value(false));
     }
 
@@ -125,6 +129,7 @@ class MissionApiIntegrationTest {
                 "일회용 컵 대신 텀블러를 사용합니다.",
                 MissionCategory.REUSABLE,
                 230L,
+                500L,
                 true
         );
 
@@ -138,6 +143,7 @@ class MissionApiIntegrationTest {
                         .value("일회용 컵 대신 텀블러를 사용합니다."))
                 .andExpect(jsonPath("$.data.category").value("REUSABLE"))
                 .andExpect(jsonPath("$.data.carbonReductionG").value(230))
+                .andExpect(jsonPath("$.data.rewardPoints").value(500))
                 .andExpect(jsonPath("$.data.completedToday").value(false));
     }
 
@@ -259,8 +265,26 @@ class MissionApiIntegrationTest {
             long carbonReductionG,
             boolean active
     ) {
+        return saveMission(name, description, category, carbonReductionG, 100L, active);
+    }
+
+    private Mission saveMission(
+            String name,
+            String description,
+            MissionCategory category,
+            long carbonReductionG,
+            long rewardPoints,
+            boolean active
+    ) {
         return missionRepository.saveAndFlush(
-                Mission.create(name, description, category, carbonReductionG, active)
+                Mission.create(
+                        name,
+                        description,
+                        category,
+                        carbonReductionG,
+                        rewardPoints,
+                        active
+                )
         );
     }
 

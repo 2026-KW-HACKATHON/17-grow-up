@@ -23,7 +23,7 @@ public enum ErrorCode {
     EXPIRED_QR_TOKEN(HttpStatus.BAD_REQUEST, "QR 토큰이 만료되었습니다."),
     MISSION_NOT_ALLOWED(HttpStatus.FORBIDDEN, "해당 제휴처에서 인증할 수 없는 미션입니다."),
 
-    INSUFFICIENT_CARBON(HttpStatus.CONFLICT, "포인트로 전환할 수 있는 탄소 감축량이 부족합니다."),
+    INSUFFICIENT_POINTS(HttpStatus.CONFLICT, "서울페이로 전환할 수 있는 포인트가 부족합니다."),
 
     INVALID_PARTNER_LOGIN(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다."),
     INACTIVE_PARTNER_ACCOUNT(HttpStatus.FORBIDDEN, "사용할 수 없는 제휴처 계정입니다.");

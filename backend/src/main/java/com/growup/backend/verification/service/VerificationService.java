@@ -72,7 +72,11 @@ public class VerificationService {
             MissionCompletion savedCompletion = missionCompletionRepository.saveAndFlush(
                     completion
             );
-            user.completeMission(mission.getCarbonReductionG(), today);
+            user.completeMission(
+                    mission.getCarbonReductionG(),
+                    mission.getRewardPoints(),
+                    today
+            );
             return VerificationResponse.from(savedCompletion);
         } catch (DataIntegrityViolationException exception) {
             if (isCompletionUniqueConstraintViolation(exception)) {

@@ -63,6 +63,7 @@ class VerificationServiceTest {
                 "일회용 컵 대신 텀블러를 사용합니다.",
                 MissionCategory.REUSABLE,
                 230L,
+                500L,
                 true
         );
         request = new VerificationRequest("qr-token", 1L);
@@ -82,6 +83,8 @@ class VerificationServiceTest {
                 .isEqualTo(ErrorCode.MISSION_ALREADY_COMPLETED);
         assertThat(user.getTotalCarbonG()).isZero();
         assertThat(user.getConvertibleCarbonG()).isZero();
+        assertThat(user.getAvailablePoints()).isZero();
+        assertThat(user.getTotalEarnedPoints()).isZero();
         assertThat(user.getCurrentStreak()).isZero();
     }
 

@@ -187,6 +187,7 @@ class MissionCompletionRepositoryIntegrationTest {
                 name + " 설명",
                 MissionCategory.REUSABLE,
                 100L,
+                100L,
                 true
         ));
     }
