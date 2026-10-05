@@ -127,7 +127,9 @@
   border-radius: 14px;
   background: #ffffff;
 }
-
+.friend-add-page__friend-list:empty {
+  border: none;
+}
 .friend-add-page__friend-item {
   display: grid;
   grid-template-columns: 46px 1fr auto;
@@ -172,4 +174,136 @@
 .friend-add-page__friend-status span {
   color: #aaaaaa;
   font-size: 10px;
+}
+.friend-add-page__friend-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto 24px;
+  align-items: center;
+  gap: 10px;
+}
+
+.friend-add-page__friend-delete {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.friend-add-page__friend-delete img {
+  width: 22px;
+  height: 22px;
+
+  display: block;
+  object-fit: contain;
+}
+.friend-add-page__friend-delete {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.friend-add-page__friend-delete img {
+  width: 22px;
+  height: 22px;
+
+  display: block;
+  object-fit: contain;
+}
+
+/* 삭제 팝업 */
+
+.friend-add-page__modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.18);
+
+  z-index: 1000;
+}
+
+.friend-add-page__modal {
+  width: 100%;
+  max-width: 274px;
+
+  padding: 30px 28px 26px;
+
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.friend-add-page__modal h2 {
+  margin: 0 0 14px;
+
+  color: #111111;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.friend-add-page__modal p {
+  margin: 0 0 20px;
+
+  color: #000;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.friend-add-page__modal p strong {
+  font-weight: 700;
+}
+
+.friend-add-page__modal-delete,
+.friend-add-page__modal-cancel {
+  width: 130px;
+  height: 38px;
+
+  border: 0;
+  border-radius: 11px;
+
+  font-size: 12.47px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.friend-add-page__modal-delete {
+  margin-bottom: 8px;
+
+  background: #fb6a6a;
+  color: #ffffff;
+}
+
+.friend-add-page__modal-cancel {
+  background: #cecece;
+  color: #ffffff;
 }

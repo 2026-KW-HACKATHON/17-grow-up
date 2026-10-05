@@ -37,6 +37,9 @@ public class Mission {
     @Column(name = "carbon_reduction_g", nullable = false)
     private long carbonReductionG;
 
+    @Column(name = "reward_points", nullable = false)
+    private long rewardPoints;
+
     @Column(nullable = false)
     private boolean active;
 
@@ -48,6 +51,7 @@ public class Mission {
             String description,
             MissionCategory category,
             long carbonReductionG,
+            long rewardPoints,
             boolean active
     ) {
         Mission mission = new Mission();
@@ -55,6 +59,7 @@ public class Mission {
         mission.description = description;
         mission.category = category;
         mission.carbonReductionG = carbonReductionG;
+        mission.rewardPoints = rewardPoints;
         mission.active = active;
         return mission;
     }

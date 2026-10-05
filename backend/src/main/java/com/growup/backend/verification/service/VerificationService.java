@@ -53,7 +53,7 @@ public class VerificationService {
         );
 
         Long userId = extractQrUserId(request.qrToken());
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Mission mission = missionRepository.findByIdAndActiveTrue(request.missionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MISSION_NOT_FOUND));
@@ -69,9 +69,15 @@ public class VerificationService {
 
         MissionCompletion completion = MissionCompletion.create(user, mission, today);
         try {
-            return VerificationResponse.from(
-                    missionCompletionRepository.saveAndFlush(completion)
+            MissionCompletion savedCompletion = missionCompletionRepository.saveAndFlush(
+                    completion
             );
+            user.completeMission(
+                    mission.getCarbonReductionG(),
+                    mission.getRewardPoints(),
+                    today
+            );
+            return VerificationResponse.from(savedCompletion);
         } catch (DataIntegrityViolationException exception) {
             if (isCompletionUniqueConstraintViolation(exception)) {
                 throw new BusinessException(ErrorCode.MISSION_ALREADY_COMPLETED);

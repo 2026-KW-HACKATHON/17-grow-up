@@ -11,6 +11,9 @@ import MissionPage from '../pages/Mission/MissionPage'
 import MissionDetailPage from '../pages/Mission/MissionDetailPage'
 import MissionQrPage from '../pages/Mission/MissionQrPage'
 import MissionSuccessPage from '../pages/Mission/MissionSuccessPage'
+import AlarmPage from '../pages/Main/AlarmPage'
+import StoreDetailPage from '../pages/Mission/StoreDetailPage'
+
 function AppRouter() {
   return (
     <Routes>
@@ -35,6 +38,8 @@ function AppRouter() {
         path="/mission/:missionId/success"
         element={<MissionSuccessPage />}
       />
+      <Route path="/stores" element={<StoreDetailPage />} />
+      <Route path="/alarm" element={<AlarmPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

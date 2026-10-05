@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -83,6 +84,8 @@ class VerificationApiIntegrationTest {
                 .andExpect(jsonPath("$.data.missionCompletionId").isNumber())
                 .andExpect(jsonPath("$.data.userId").value(user.getId()))
                 .andExpect(jsonPath("$.data.missionId").value(mission.getId()))
+                .andExpect(jsonPath("$.data.pointsAwarded").value(500))
+                .andExpect(jsonPath("$.data.availablePoints").value(500))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -100,6 +103,54 @@ class VerificationApiIntegrationTest {
         assertThat(completion.getUser().getId()).isEqualTo(user.getId());
         assertThat(completion.getMission().getId()).isEqualTo(mission.getId());
         assertThat(completion.getCompletedDate()).isEqualTo(responseDate);
+
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(updatedUser.getTotalCarbonG()).isEqualTo(230L);
+        assertThat(updatedUser.getConvertibleCarbonG()).isZero();
+        assertThat(updatedUser.getAvailablePoints()).isEqualTo(500L);
+        assertThat(updatedUser.getTotalEarnedPoints()).isEqualTo(500L);
+        assertThat(updatedUser.getCurrentStreak()).isEqualTo(1);
+        assertThat(updatedUser.getLongestStreak()).isEqualTo(1);
+        assertThat(updatedUser.getLastPracticeDate()).isEqualTo(responseDate);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "텀블러 사용하기, 230, 500",
+            "장바구니 사용하기, 47, 200",
+            "포장 시 다회용기 사용하기, 200, 500",
+            "음식 안 남기기, 5, 100",
+            "일회용 수저·포크 사용 안 하기, 110, 300"
+    })
+    void verificationAwardsPointsConfiguredOnMission(
+            String missionName,
+            long carbonReductionG,
+            long rewardPoints
+    ) throws Exception {
+        User user = saveUser();
+        Mission mission = saveMission(
+                missionName,
+                carbonReductionG,
+                rewardPoints,
+                true
+        );
+
+        mockMvc.perform(post("/api/v1/verifications")
+                        .header(HttpHeaders.AUTHORIZATION, partnerBearerToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(verificationBody(
+                                jwtTokenProvider.createQrToken(user.getId()),
+                                mission.getId()
+                        )))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.pointsAwarded").value(rewardPoints))
+                .andExpect(jsonPath("$.data.availablePoints").value(rewardPoints));
+
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(updatedUser.getTotalCarbonG()).isEqualTo(carbonReductionG);
+        assertThat(updatedUser.getConvertibleCarbonG()).isZero();
+        assertThat(updatedUser.getAvailablePoints()).isEqualTo(rewardPoints);
+        assertThat(updatedUser.getTotalEarnedPoints()).isEqualTo(rewardPoints);
     }
 
     @Test
@@ -199,6 +250,11 @@ class VerificationApiIntegrationTest {
                         )))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("MISSION_ALREADY_COMPLETED"));
+
+        User unchangedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(unchangedUser.getTotalCarbonG()).isZero();
+        assertThat(unchangedUser.getAvailablePoints()).isZero();
+        assertThat(unchangedUser.getTotalEarnedPoints()).isZero();
     }
 
     @Test
@@ -253,11 +309,21 @@ class VerificationApiIntegrationTest {
     }
 
     private Mission saveMission(boolean active) {
+        return saveMission("텀블러 사용하기", 230L, 500L, active);
+    }
+
+    private Mission saveMission(
+            String name,
+            long carbonReductionG,
+            long rewardPoints,
+            boolean active
+    ) {
         return missionRepository.saveAndFlush(Mission.create(
-                "텀블러 사용",
-                "일회용 컵 대신 텀블러를 사용합니다.",
+                name,
+                name + " 미션 설명",
                 MissionCategory.REUSABLE,
-                230L,
+                carbonReductionG,
+                rewardPoints,
                 active
         ));
     }

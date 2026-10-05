@@ -30,8 +30,8 @@
 }
 
 .mission-card__image {
-  width: 62px;
-  height: 62px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
 }
 

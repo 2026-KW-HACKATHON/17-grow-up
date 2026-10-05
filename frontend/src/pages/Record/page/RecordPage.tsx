@@ -4,7 +4,32 @@ import BottomNav from '../../../components/BottomNav/BottomNav'
 import './RecordPage.css'
 
 type RecordTab = 'mine' | 'friend'
+interface MonthlyActivity {
+  id: number
+  title: string
+  place: string
+  point: number
+  time: string
+  image?: string
+}
 
+const monthlyActivities: MonthlyActivity[] = [
+  {
+    id: 1,
+    title: '텀블러 사용하기',
+    place: '월계동 그린커피',
+    point: 50,
+    time: '오늘 14:32',
+    image: '/tumbler.svg',
+  },
+  {
+    id: 2,
+    title: '텀블러 사용하기',
+    place: '월계동 그린커피',
+    point: 50,
+    time: '오늘 14:32',
+  },
+]
 interface Friend {
   id: number
   rank: number
@@ -179,6 +204,30 @@ function RecordPage() {
 
             <section className="record-page__monthly">
               <h2>이번 달 실천 내역</h2>
+
+              <div className="record-page__activity-list">
+                {monthlyActivities.map((activity) => (
+                  <div key={activity.id} className="record-page__activity-item">
+                    <div className="record-page__activity-icon">
+                      {activity.image ? (
+                        <img src={activity.image} alt="" />
+                      ) : (
+                        <div className="record-page__activity-placeholder" />
+                      )}
+                    </div>
+
+                    <div className="record-page__activity-info">
+                      <strong>{activity.title}</strong>
+                      <span>{activity.place}</span>
+                    </div>
+
+                    <div className="record-page__activity-point">
+                      <strong>+{activity.point}P</strong>
+                      <span>{activity.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </section>
           </>
         ) : (

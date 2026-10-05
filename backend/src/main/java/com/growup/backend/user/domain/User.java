@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,8 @@ import lombok.NoArgsConstructor;
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
+    private static final long SEOUL_PAY_POINT_UNIT = 10_000L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -101,6 +104,51 @@ public class User {
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void completeMission(
+            long carbonReductionG,
+            long rewardPoints,
+            LocalDate completedDate
+    ) {
+        LocalDate completionDate = Objects.requireNonNull(
+                completedDate,
+                "completedDate는 필수입니다."
+        );
+        if (carbonReductionG < 0) {
+            throw new IllegalArgumentException("carbonReductionG는 0 이상이어야 합니다.");
+        }
+        if (rewardPoints < 0) {
+            throw new IllegalArgumentException("rewardPoints는 0 이상이어야 합니다.");
+        }
+
+        totalCarbonG += carbonReductionG;
+        availablePoints += rewardPoints;
+        totalEarnedPoints += rewardPoints;
+
+        if (lastPracticeDate == null) {
+            currentStreak = 1;
+        } else if (completionDate.equals(lastPracticeDate.plusDays(1))) {
+            currentStreak++;
+        } else if (completionDate.isAfter(lastPracticeDate)) {
+            currentStreak = 1;
+        }
+
+        longestStreak = Math.max(longestStreak, currentStreak);
+        if (lastPracticeDate == null || completionDate.isAfter(lastPracticeDate)) {
+            lastPracticeDate = completionDate;
+        }
+    }
+
+    public void convertPointsToSeoulPay(long points) {
+        if (points < SEOUL_PAY_POINT_UNIT || points % SEOUL_PAY_POINT_UNIT != 0) {
+            throw new IllegalArgumentException("포인트는 10,000P 단위여야 합니다.");
+        }
+        if (availablePoints < points) {
+            throw new IllegalStateException("서울페이로 전환할 포인트가 부족합니다.");
+        }
+
+        availablePoints -= points;
     }
 
     @PrePersist
