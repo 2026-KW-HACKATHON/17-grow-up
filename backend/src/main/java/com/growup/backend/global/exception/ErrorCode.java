@@ -26,7 +26,8 @@ public enum ErrorCode {
     INSUFFICIENT_POINTS(HttpStatus.CONFLICT, "서울페이로 전환할 수 있는 포인트가 부족합니다."),
 
     INVALID_PARTNER_LOGIN(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다."),
-    INACTIVE_PARTNER_ACCOUNT(HttpStatus.FORBIDDEN, "사용할 수 없는 제휴처 계정입니다.");
+    INACTIVE_PARTNER_ACCOUNT(HttpStatus.FORBIDDEN, "사용할 수 없는 제휴처 계정입니다."),
+    PARTNER_NOT_FOUND(HttpStatus.NOT_FOUND, "소속 제휴처 정보를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

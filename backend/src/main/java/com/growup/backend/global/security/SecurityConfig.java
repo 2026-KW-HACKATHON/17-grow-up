@@ -52,6 +52,8 @@ public class SecurityConfig {
                         .hasRole(Role.USER.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/verifications")
                         .hasRole(Role.PARTNER.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/partners/me")
+                        .hasRole(Role.PARTNER.name())
                         .requestMatchers("/api/v1/users/**").hasRole(Role.USER.name())
                         .requestMatchers("/api/v1/missions/**").hasRole(Role.USER.name())
                         .requestMatchers("/api/v1/points/**").hasRole(Role.USER.name())
