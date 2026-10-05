@@ -7,7 +7,9 @@ public record VerificationResponse(
         Long missionCompletionId,
         Long userId,
         Long missionId,
-        LocalDate completedDate
+        LocalDate completedDate,
+        long pointsAwarded,
+        long availablePoints
 ) {
 
     public static VerificationResponse from(MissionCompletion completion) {
@@ -15,7 +17,9 @@ public record VerificationResponse(
                 completion.getId(),
                 completion.getUser().getId(),
                 completion.getMission().getId(),
-                completion.getCompletedDate()
+                completion.getCompletedDate(),
+                completion.getMission().getRewardPoints(),
+                completion.getUser().getAvailablePoints()
         );
     }
 }

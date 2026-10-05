@@ -8,6 +8,7 @@ public record MissionListResponse(
         String name,
         MissionCategory category,
         long carbonReductionG,
+        long rewardPoints,
         boolean completedToday
 ) {
 
@@ -17,6 +18,7 @@ public record MissionListResponse(
                 mission.getName(),
                 mission.getCategory(),
                 mission.getCarbonReductionG(),
+                mission.getRewardPoints(),
                 completedToday
         );
     }

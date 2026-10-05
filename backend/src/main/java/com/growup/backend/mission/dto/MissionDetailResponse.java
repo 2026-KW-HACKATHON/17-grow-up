@@ -9,6 +9,7 @@ public record MissionDetailResponse(
         String description,
         MissionCategory category,
         long carbonReductionG,
+        long rewardPoints,
         boolean completedToday
 ) {
 
@@ -19,6 +20,7 @@ public record MissionDetailResponse(
                 mission.getDescription(),
                 mission.getCategory(),
                 mission.getCarbonReductionG(),
+                mission.getRewardPoints(),
                 completedToday
         );
     }

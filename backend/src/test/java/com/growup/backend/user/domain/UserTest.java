@@ -26,10 +26,12 @@ class UserTest {
     void firstMissionCompletionAddsCarbonAndStartsStreak() {
         LocalDate completedDate = LocalDate.of(2026, 10, 4);
 
-        user.completeMission(230L, completedDate);
+        user.completeMission(230L, 500L, completedDate);
 
         assertThat(user.getTotalCarbonG()).isEqualTo(230L);
-        assertThat(user.getConvertibleCarbonG()).isEqualTo(230L);
+        assertThat(user.getConvertibleCarbonG()).isZero();
+        assertThat(user.getAvailablePoints()).isEqualTo(500L);
+        assertThat(user.getTotalEarnedPoints()).isEqualTo(500L);
         assertThat(user.getCurrentStreak()).isEqualTo(1);
         assertThat(user.getLongestStreak()).isEqualTo(1);
         assertThat(user.getLastPracticeDate()).isEqualTo(completedDate);
@@ -38,12 +40,14 @@ class UserTest {
     @Test
     void anotherMissionOnSameDateAddsCarbonWithoutIncreasingStreak() {
         LocalDate completedDate = LocalDate.of(2026, 10, 4);
-        user.completeMission(230L, completedDate);
+        user.completeMission(230L, 500L, completedDate);
 
-        user.completeMission(47L, completedDate);
+        user.completeMission(47L, 200L, completedDate);
 
         assertThat(user.getTotalCarbonG()).isEqualTo(277L);
-        assertThat(user.getConvertibleCarbonG()).isEqualTo(277L);
+        assertThat(user.getConvertibleCarbonG()).isZero();
+        assertThat(user.getAvailablePoints()).isEqualTo(700L);
+        assertThat(user.getTotalEarnedPoints()).isEqualTo(700L);
         assertThat(user.getCurrentStreak()).isEqualTo(1);
         assertThat(user.getLongestStreak()).isEqualTo(1);
     }
@@ -51,9 +55,9 @@ class UserTest {
     @Test
     void missionOnNextDateIncreasesStreak() {
         LocalDate firstDate = LocalDate.of(2026, 10, 3);
-        user.completeMission(230L, firstDate);
+        user.completeMission(230L, 500L, firstDate);
 
-        user.completeMission(47L, firstDate.plusDays(1));
+        user.completeMission(47L, 200L, firstDate.plusDays(1));
 
         assertThat(user.getCurrentStreak()).isEqualTo(2);
         assertThat(user.getLongestStreak()).isEqualTo(2);
@@ -63,10 +67,10 @@ class UserTest {
     @Test
     void missionAfterGapRestartsCurrentStreakAndKeepsLongestStreak() {
         LocalDate firstDate = LocalDate.of(2026, 10, 1);
-        user.completeMission(230L, firstDate);
-        user.completeMission(47L, firstDate.plusDays(1));
+        user.completeMission(230L, 500L, firstDate);
+        user.completeMission(47L, 200L, firstDate.plusDays(1));
 
-        user.completeMission(200L, firstDate.plusDays(3));
+        user.completeMission(200L, 500L, firstDate.plusDays(3));
 
         assertThat(user.getCurrentStreak()).isEqualTo(1);
         assertThat(user.getLongestStreak()).isEqualTo(2);
@@ -76,10 +80,10 @@ class UserTest {
     @Test
     void olderCompletionDoesNotChangeCurrentStreakOrLastPracticeDate() {
         LocalDate latestDate = LocalDate.of(2026, 10, 4);
-        user.completeMission(230L, latestDate.minusDays(1));
-        user.completeMission(47L, latestDate);
+        user.completeMission(230L, 500L, latestDate.minusDays(1));
+        user.completeMission(47L, 200L, latestDate);
 
-        user.completeMission(200L, latestDate.minusDays(3));
+        user.completeMission(200L, 500L, latestDate.minusDays(3));
 
         assertThat(user.getTotalCarbonG()).isEqualTo(477L);
         assertThat(user.getCurrentStreak()).isEqualTo(2);
@@ -89,12 +93,51 @@ class UserTest {
 
     @Test
     void negativeCarbonReductionIsRejectedWithoutChangingUser() {
-        assertThatThrownBy(() -> user.completeMission(-1L, LocalDate.of(2026, 10, 4)))
+        assertThatThrownBy(() -> user.completeMission(
+                -1L,
+                500L,
+                LocalDate.of(2026, 10, 4)
+        ))
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThat(user.getTotalCarbonG()).isZero();
         assertThat(user.getConvertibleCarbonG()).isZero();
         assertThat(user.getCurrentStreak()).isZero();
         assertThat(user.getLastPracticeDate()).isNull();
+    }
+
+    @Test
+    void convertsTenThousandPointsWithoutReducingLifetimeTotals() {
+        user.completeMission(30_000L, 30_000L, LocalDate.of(2026, 10, 4));
+
+        user.convertPointsToSeoulPay(10_000L);
+
+        assertThat(user.getTotalCarbonG()).isEqualTo(30_000L);
+        assertThat(user.getConvertibleCarbonG()).isZero();
+        assertThat(user.getAvailablePoints()).isEqualTo(20_000L);
+        assertThat(user.getTotalEarnedPoints()).isEqualTo(30_000L);
+    }
+
+    @Test
+    void convertsTwentyThousandPoints() {
+        user.completeMission(230L, 20_000L, LocalDate.of(2026, 10, 4));
+
+        user.convertPointsToSeoulPay(20_000L);
+
+        assertThat(user.getTotalCarbonG()).isEqualTo(230L);
+        assertThat(user.getAvailablePoints()).isZero();
+        assertThat(user.getTotalEarnedPoints()).isEqualTo(20_000L);
+    }
+
+    @Test
+    void rejectsConversionWhenAvailablePointsAreInsufficientWithoutChangingValues() {
+        user.completeMission(230L, 10_000L, LocalDate.of(2026, 10, 4));
+
+        assertThatThrownBy(() -> user.convertPointsToSeoulPay(20_000L))
+                .isInstanceOf(IllegalStateException.class);
+
+        assertThat(user.getTotalCarbonG()).isEqualTo(230L);
+        assertThat(user.getAvailablePoints()).isEqualTo(10_000L);
+        assertThat(user.getTotalEarnedPoints()).isEqualTo(10_000L);
     }
 }
