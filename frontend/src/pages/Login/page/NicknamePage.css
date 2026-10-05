@@ -1,0 +1,117 @@
+.nickname-page {
+  position: relative;
+
+  width: 348px;
+  height: 100vh;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.nickname-page__intro {
+  position: absolute;
+  top: 125px;
+  left: 0;
+}
+
+.nickname-page__intro h1 {
+  margin: 0;
+
+  color: #1f1f1f;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 33px;
+  letter-spacing: -0.8px;
+}
+
+.nickname-page__intro p {
+  margin: 5px 0 0;
+
+  color: #666666;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.nickname-page__field {
+  position: absolute;
+  top: 202px;
+  left: 0;
+
+  width: 348px;
+  height: 59px;
+}
+
+.nickname-page__input {
+  width: 100%;
+  height: 100%;
+  padding: 0 105px 0 22px;
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 16px;
+  outline: none;
+
+  background: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+
+  color: #222222;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nickname-page__input::placeholder {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.nickname-page__check {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+
+  height: 30px;
+  padding: 0 12px;
+
+  border: none;
+  border-radius: 8px;
+  background: #298c50;
+
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.nickname-page__message {
+  position: absolute;
+  top: 270px;
+  left: 10px;
+
+  margin: 0;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nickname-page__message--success {
+  color: #298c50;
+}
+
+.nickname-page__message--error {
+  color: #e94b4b;
+}
+
+.nickname-page__action {
+  position: absolute;
+  top: 454px;
+  left: -2px;
+
+  width: 352px;
+}
+
+.nickname-page__action .login-footer {
+  margin-top: 38px;
+}
