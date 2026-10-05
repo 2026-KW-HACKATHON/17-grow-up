@@ -5,6 +5,8 @@ import MainPage from '../pages/Main/MainPage'
 import PointPage from '../pages/Point/page/PointPage'
 import SeoulPayPage from '../pages/Point/page/SeoulPayPage'
 import MyPage from '../pages/My/page/MyPage'
+import UserInfoPage from '../pages/My/page/UserInfoPage'
+import PasswordChangePage from '../pages/My/page/PasswordChangePage'
 import RecordPage from '../pages/Record/page/RecordPage'
 import FriendAddPage from '../pages/Record/page/FriendAddPage'
 import MissionPage from '../pages/Mission/MissionPage'
@@ -32,14 +34,22 @@ function AppRouter() {
       <Route path="/record/friend-add" element={<FriendAddPage />} />
 
       <Route path="/my" element={<MyPage />} />
+      <Route path="/my/user-info" element={<UserInfoPage />} />
+      <Route
+        path="/my/user-info/password"
+        element={<PasswordChangePage />}
+      />
+
       <Route path="/mission/:missionId" element={<MissionDetailPage />} />
       <Route path="/mission/:missionId/qr" element={<MissionQrPage />} />
       <Route
         path="/mission/:missionId/success"
         element={<MissionSuccessPage />}
       />
+
       <Route path="/stores" element={<StoreDetailPage />} />
       <Route path="/alarm" element={<AlarmPage />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
