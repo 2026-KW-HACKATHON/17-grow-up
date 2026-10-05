@@ -1,0 +1,51 @@
+.email-page {
+  position: relative;
+
+  width: 348px;
+  height: 100vh;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.email-page__intro {
+  position: absolute;
+  top: 125px;
+  left: 0;
+}
+
+.email-page__intro h1 {
+  margin: 0;
+
+  color: #1f1f1f;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 33px;
+  letter-spacing: -0.8px;
+}
+
+.email-page__intro p {
+  margin: 5px 0 0;
+
+  color: #666666;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.email-page > .login-input {
+  position: absolute;
+  top: 202px;
+  left: 0;
+}
+
+.email-page__action {
+  position: absolute;
+  top: 454px;
+  left: -2px;
+
+  width: 352px;
+}
+
+.email-page__action .login-footer {
+  margin-top: 38px;
+}
