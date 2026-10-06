@@ -11,6 +11,9 @@ public enum ErrorCode {
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "올바르지 않은 닉네임입니다."),
+    CURRENT_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
+    PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
+    SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호는 현재 비밀번호와 달라야 합니다."),
 
     CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 친구로 추가할 수 없습니다."),
     FRIEND_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 친구로 등록된 사용자입니다."),
