@@ -42,7 +42,7 @@ public class UserService {
 
     @Transactional
     public void changePassword(Long accountId, ChangePasswordRequest request) {
-        User user = findUser(accountId);
+        User user = findUserForUpdate(accountId);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.CURRENT_PASSWORD_MISMATCH);
@@ -55,6 +55,11 @@ public class UserService {
         }
 
         user.changePassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    private User findUserForUpdate(Long accountId) {
+        return userRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     private User findUser(Long accountId) {

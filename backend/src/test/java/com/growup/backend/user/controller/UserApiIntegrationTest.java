@@ -7,12 +7,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.growup.backend.global.exception.BusinessException;
+import com.growup.backend.global.exception.ErrorCode;
 import com.growup.backend.global.security.JwtTokenProvider;
 import com.growup.backend.global.security.Role;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
+import com.growup.backend.user.dto.ChangePasswordRequest;
 import com.growup.backend.user.repository.UserRepository;
+import com.growup.backend.user.service.UserService;
 import com.jayway.jsonpath.JsonPath;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +51,9 @@ class UserApiIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserService userService;
 
     @BeforeEach
     void cleanDatabase() {
@@ -318,6 +329,62 @@ class UserApiIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
 
+    @Test
+    void concurrentPasswordChangesAllowOnlyOneRequest() throws Exception {
+        User user = saveUser(0L);
+        ChangePasswordRequest firstRequest = new ChangePasswordRequest(
+                CURRENT_PASSWORD,
+                "firstNewPassword123!",
+                "firstNewPassword123!"
+        );
+        ChangePasswordRequest secondRequest = new ChangePasswordRequest(
+                CURRENT_PASSWORD,
+                "secondNewPassword123!",
+                "secondNewPassword123!"
+        );
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<PasswordChangeResult> first = executor.submit(
+                    () -> changePasswordAfterStart(start, user.getId(), firstRequest)
+            );
+            Future<PasswordChangeResult> second = executor.submit(
+                    () -> changePasswordAfterStart(start, user.getId(), secondRequest)
+            );
+
+            start.countDown();
+            PasswordChangeResult firstResult = first.get();
+            PasswordChangeResult secondResult = second.get();
+
+            assertThat(new ErrorCode[]{firstResult.errorCode(), secondResult.errorCode()})
+                    .containsExactlyInAnyOrder(null, ErrorCode.CURRENT_PASSWORD_MISMATCH);
+
+            PasswordChangeResult successResult = firstResult.errorCode() == null
+                    ? firstResult
+                    : secondResult;
+            PasswordChangeResult failedResult = firstResult.errorCode() == null
+                    ? secondResult
+                    : firstResult;
+            User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+
+            assertThat(passwordEncoder.matches(
+                    successResult.newPassword(),
+                    updatedUser.getPasswordHash()
+            )).isTrue();
+            assertThat(passwordEncoder.matches(
+                    failedResult.newPassword(),
+                    updatedUser.getPasswordHash()
+            )).isFalse();
+            assertThat(passwordEncoder.matches(
+                    CURRENT_PASSWORD,
+                    updatedUser.getPasswordHash()
+            )).isFalse();
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
     private User saveUser(long totalCarbonG) {
         User user = User.create(
                 "growup",
@@ -393,7 +460,24 @@ class UserApiIntegrationTest {
                 .isTrue();
     }
 
+    private PasswordChangeResult changePasswordAfterStart(
+            CountDownLatch start,
+            Long userId,
+            ChangePasswordRequest request
+    ) throws InterruptedException {
+        start.await();
+        try {
+            userService.changePassword(userId, request);
+            return new PasswordChangeResult(request.newPassword(), null);
+        } catch (BusinessException exception) {
+            return new PasswordChangeResult(request.newPassword(), exception.getErrorCode());
+        }
+    }
+
     private String bearerToken(Long accountId) {
         return BEARER_PREFIX + jwtTokenProvider.createAccessToken(accountId, Role.USER);
+    }
+
+    private record PasswordChangeResult(String newPassword, ErrorCode errorCode) {
     }
 }
