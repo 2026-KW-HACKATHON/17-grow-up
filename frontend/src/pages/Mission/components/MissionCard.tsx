@@ -19,17 +19,22 @@ function MissionCard({ mission }: MissionCardProps) {
         className="mission-card__image-box"
         style={{ backgroundColor: mission.backgroundColor }}
       >
-        <img className="mission-card__image" src={mission.image} alt="" />
+        <img
+          className="mission-card__image"
+          src={mission.image}
+          alt={mission.title}
+        />
       </div>
 
       <div className="mission-card__content">
         <div className="mission-card__info">
-          <strong>{mission.title}</strong>
-          <span>{mission.category}</span>
+          <strong className="mission-card__title">{mission.title}</strong>
+
+          <span className="mission-card__category">{mission.category}</span>
 
           <div className="mission-card__point">
             <img src="/point-coin.svg" alt="" />
-            <span>{mission.point}</span>
+            <strong>{mission.point}</strong>
           </div>
         </div>
 

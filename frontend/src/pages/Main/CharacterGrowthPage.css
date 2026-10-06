@@ -1,0 +1,457 @@
+.growth-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+
+  background: #ffffff;
+  color: #111111;
+}
+
+.growth-page__content {
+  padding-bottom: 110px;
+}
+
+/* HERO */
+
+.growth-page__hero {
+  position: relative;
+
+  width: 100%;
+  height: 260px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+.growth-page__hero-background {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+  object-position: center;
+
+  z-index: 0;
+}
+
+.growth-page__back {
+  position: absolute;
+  top: 42px;
+  left: 24px;
+
+  z-index: 3;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: #777777;
+
+  font-size: 30px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+/* 캐릭터 이미지 들어오기 전 임시 영역 */
+
+.growth-page__character-placeholder {
+  position: absolute;
+
+  left: 50%;
+  bottom: 20px;
+
+  transform: translateX(-50%);
+
+  z-index: 2;
+
+  width: 150px;
+  height: 120px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+}
+
+.growth-page__character-placeholder span {
+  font-size: 72px;
+  line-height: 1;
+}
+
+/* WHITE SHEET */
+
+.growth-page__sheet {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: -22px;
+
+  padding: 18px 26px 32px;
+
+  border-radius: 24px 24px 0 0;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.growth-page__level-badge {
+  width: fit-content;
+
+  margin: 0 auto 7px;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  background: #edf4ef;
+
+  color: #333333;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.growth-page__sheet > h1 {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.growth-page__carbon {
+  margin: 5px 0 0;
+
+  text-align: center;
+
+  color: #000000;
+
+  font-size: 12px;
+}
+
+.growth-page__carbon strong {
+  color: #298249;
+  font-weight: 800;
+}
+
+/* LEVEL PROGRESS */
+
+.growth-page__progress-section {
+  margin-top: 34px;
+}
+
+.growth-page__progress-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.growth-page__progress-row > strong {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.growth-page__progress-row > strong:last-child {
+  text-align: right;
+}
+
+.growth-page__progress-bar {
+  position: relative;
+
+  width: 100%;
+  height: 14px;
+
+  border-radius: 999px;
+
+  background: #dedede;
+
+  overflow: visible;
+}
+
+.growth-page__progress-value {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: #298249;
+}
+
+.growth-page__progress-percent {
+  position: absolute;
+
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  color: #ffffff;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  z-index: 2;
+}
+
+/* 진행바 위 탄소 아이콘 */
+
+.growth-page__sprout {
+  position: absolute;
+
+  bottom: 8px;
+
+  width: 22px;
+  height: 22px;
+
+  transform: translateX(-80%);
+
+  display: block;
+  object-fit: contain;
+}
+
+.growth-page__progress-section > p {
+  margin: 8px 0 0 50px;
+
+  color: #777777;
+
+  font-size: 12px;
+}
+
+.growth-page__progress-section > p strong {
+  color: #555555;
+
+  font-weight: 700;
+}
+
+/* STATUS */
+
+.growth-page__status {
+  margin-top: 38px;
+}
+
+.growth-page__status h2 {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0 0 24px;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* 미션별 실천 현황 앞 탄소 아이콘 */
+
+.growth-page__status-icon {
+  width: 24px;
+  height: 24px;
+
+  flex-shrink: 0;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+.growth-page__status-content {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+
+  gap: 18px;
+}
+
+/* DONUT */
+
+.growth-page__chart {
+  position: relative;
+
+  width: 145px;
+  height: 145px;
+
+  border-radius: 50%;
+
+  background: conic-gradient(
+    #36a85f 0% 38%,
+    #fdca61 38% 60%,
+    #669ced 60% 78%,
+    #fb6a6a 78% 92%,
+    #ab70f8 92% 100%
+  );
+}
+
+.growth-page__chart-hole {
+  position: absolute;
+
+  inset: 31px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+.growth-page__chart-hole span {
+  font-size: 10px;
+}
+
+.growth-page__chart-hole strong {
+  margin-top: 2px;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* LEGEND */
+
+.growth-page__legend {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.growth-page__legend-item {
+  display: grid;
+  grid-template-columns: 9px 1fr auto;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.growth-page__dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+}
+
+.growth-page__dot--tumbler {
+  background: #36a85f;
+}
+
+.growth-page__dot--shopping-bag {
+  background: #fdca61;
+}
+
+.growth-page__dot--container {
+  background: #669ced;
+}
+
+.growth-page__dot--empty-plate {
+  background: #fb6a6a;
+}
+
+.growth-page__dot--no-disposable {
+  background: #ab70f8;
+}
+
+.growth-page__legend-item > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.growth-page__legend-item strong {
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.growth-page__legend-item div span {
+  margin-top: 1px;
+
+  color: #777777;
+
+  font-size: 7px;
+}
+
+.growth-page__legend-item em {
+  color: #298249;
+
+  font-size: 12px;
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* RECOMMEND */
+
+.growth-page__recommend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 28px;
+
+  padding: 14px 16px;
+
+  border-radius: 13px;
+
+  background: #edf6ef;
+}
+
+.growth-page__recommend-text {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.growth-page__recommend-text > span {
+  color: #000000;
+
+  font-size: 8px;
+}
+
+.growth-page__recommend-text strong {
+  margin-top: 3px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.growth-page__recommend-text p {
+  margin: 4px 0 0;
+
+  color: #000000;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.growth-page__recommend-image {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.growth-page__recommend-image img {
+  width: 46px;
+  height: 46px;
+
+  object-fit: contain;
+}
