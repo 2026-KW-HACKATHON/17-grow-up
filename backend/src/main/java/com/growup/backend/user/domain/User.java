@@ -106,6 +106,10 @@ public class User {
         this.nickname = nickname;
     }
 
+    public void changePassword(String encodedPassword) {
+        this.passwordHash = encodedPassword;
+    }
+
     public void completeMission(
             long carbonReductionG,
             long rewardPoints,

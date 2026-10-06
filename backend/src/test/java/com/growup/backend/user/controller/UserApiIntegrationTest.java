@@ -12,6 +12,7 @@ import com.growup.backend.global.security.Role;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +20,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import com.jayway.jsonpath.JsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserApiIntegrationTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String CURRENT_PASSWORD = "oldPassword123!";
+    private static final String NEW_PASSWORD = "newPassword123!";
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,6 +40,9 @@ class UserApiIntegrationTest {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void cleanDatabase() {
@@ -189,10 +195,133 @@ class UserApiIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
 
+    @Test
+    void authenticatedUserChangesPassword() throws Exception {
+        User user = saveUser(0L);
+
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                CURRENT_PASSWORD,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(passwordEncoder.matches(NEW_PASSWORD, updatedUser.getPasswordHash())).isTrue();
+        assertThat(passwordEncoder.matches(CURRENT_PASSWORD, updatedUser.getPasswordHash()))
+                .isFalse();
+    }
+
+    @Test
+    void incorrectCurrentPasswordReturnsBusinessError() throws Exception {
+        User user = saveUser(0L);
+
+        expectPasswordBusinessError(
+                user,
+                "wrongPassword123!",
+                NEW_PASSWORD,
+                NEW_PASSWORD,
+                "CURRENT_PASSWORD_MISMATCH"
+        );
+
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void mismatchedPasswordConfirmationReturnsBusinessError() throws Exception {
+        User user = saveUser(0L);
+
+        expectPasswordBusinessError(
+                user,
+                CURRENT_PASSWORD,
+                NEW_PASSWORD,
+                "differentPassword123!",
+                "PASSWORD_CONFIRM_MISMATCH"
+        );
+
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void sameAsOldPasswordReturnsBusinessError() throws Exception {
+        User user = saveUser(0L);
+
+        expectPasswordBusinessError(
+                user,
+                CURRENT_PASSWORD,
+                CURRENT_PASSWORD,
+                CURRENT_PASSWORD,
+                "SAME_AS_OLD_PASSWORD"
+        );
+
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void passwordShorterThanEightCharactersReturnsValidationError() throws Exception {
+        User user = saveUser(0L);
+
+        expectPasswordValidationError(user, "short7!", "short7!");
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void passwordLongerThanSeventyTwoCharactersReturnsValidationError() throws Exception {
+        User user = saveUser(0L);
+        String longPassword = "a".repeat(73);
+
+        expectPasswordValidationError(user, longPassword, longPassword);
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void passwordLongerThanSeventyTwoUtf8BytesReturnsValidationError() throws Exception {
+        User user = saveUser(0L);
+        String multibytePassword = "가".repeat(25);
+
+        expectPasswordValidationError(user, multibytePassword, multibytePassword);
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
+    void unauthenticatedUserCannotChangePassword() throws Exception {
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                CURRENT_PASSWORD,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    void partnerCannotChangeUserPassword() throws Exception {
+        String partnerToken = BEARER_PREFIX
+                + jwtTokenProvider.createAccessToken(1L, Role.PARTNER);
+
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .header(HttpHeaders.AUTHORIZATION, partnerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                CURRENT_PASSWORD,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+    }
+
     private User saveUser(long totalCarbonG) {
         User user = User.create(
                 "growup",
-                "hashed-password",
+                passwordEncoder.encode(CURRENT_PASSWORD),
                 "새싹이",
                 "ABCDEFGH",
                 CharacterType.TREE_A
@@ -204,6 +333,64 @@ class UserApiIntegrationTest {
         ReflectionTestUtils.setField(user, "currentStreak", 4);
         ReflectionTestUtils.setField(user, "longestStreak", 9);
         return userRepository.saveAndFlush(user);
+    }
+
+    private void expectPasswordBusinessError(
+            User user,
+            String currentPassword,
+            String newPassword,
+            String newPasswordConfirm,
+            String errorCode
+    ) throws Exception {
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                currentPassword,
+                                newPassword,
+                                newPasswordConfirm
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value(errorCode));
+    }
+
+    private void expectPasswordValidationError(
+            User user,
+            String newPassword,
+            String newPasswordConfirm
+    ) throws Exception {
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                CURRENT_PASSWORD,
+                                newPassword,
+                                newPasswordConfirm
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+    }
+
+    private String changePasswordBody(
+            String currentPassword,
+            String newPassword,
+            String newPasswordConfirm
+    ) {
+        return """
+                {
+                  "currentPassword": "%s",
+                  "newPassword": "%s",
+                  "newPasswordConfirm": "%s"
+                }
+                """.formatted(currentPassword, newPassword, newPasswordConfirm);
+    }
+
+    private void assertPasswordUnchanged(Long userId) {
+        User unchangedUser = userRepository.findById(userId).orElseThrow();
+        assertThat(passwordEncoder.matches(CURRENT_PASSWORD, unchangedUser.getPasswordHash()))
+                .isTrue();
     }
 
     private String bearerToken(Long accountId) {
