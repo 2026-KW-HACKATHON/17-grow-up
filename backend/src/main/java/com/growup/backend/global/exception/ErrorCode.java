@@ -11,6 +11,9 @@ public enum ErrorCode {
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "올바르지 않은 닉네임입니다."),
+    CURRENT_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
+    PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
+    SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호는 현재 비밀번호와 달라야 합니다."),
 
     CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 친구로 추가할 수 없습니다."),
     FRIEND_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 친구로 등록된 사용자입니다."),
@@ -26,7 +29,8 @@ public enum ErrorCode {
     INSUFFICIENT_POINTS(HttpStatus.CONFLICT, "서울페이로 전환할 수 있는 포인트가 부족합니다."),
 
     INVALID_PARTNER_LOGIN(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다."),
-    INACTIVE_PARTNER_ACCOUNT(HttpStatus.FORBIDDEN, "사용할 수 없는 제휴처 계정입니다.");
+    INACTIVE_PARTNER_ACCOUNT(HttpStatus.FORBIDDEN, "사용할 수 없는 제휴처 계정입니다."),
+    PARTNER_NOT_FOUND(HttpStatus.NOT_FOUND, "소속 제휴처 정보를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
