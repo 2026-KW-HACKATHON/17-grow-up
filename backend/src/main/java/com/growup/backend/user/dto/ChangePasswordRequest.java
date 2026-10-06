@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 public record ChangePasswordRequest(
         @NotBlank(message = "현재 비밀번호는 필수입니다.")
         @Size(max = 72, message = "현재 비밀번호는 72자 이하여야 합니다.")
+        @Utf8ByteLength(
+                max = 72,
+                message = "현재 비밀번호는 UTF-8 기준 72바이트 이하여야 합니다."
+        )
         String currentPassword,
 
         @NotBlank(message = "새 비밀번호는 필수입니다.")

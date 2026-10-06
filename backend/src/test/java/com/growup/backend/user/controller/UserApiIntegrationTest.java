@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,6 +301,26 @@ class UserApiIntegrationTest {
     }
 
     @Test
+    void currentPasswordLongerThanSeventyTwoUtf8BytesReturnsValidationError() throws Exception {
+        User user = saveUser(0L);
+        String multibyteCurrentPassword = "가".repeat(25);
+
+        mockMvc.perform(patch("/api/v1/users/me/password")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changePasswordBody(
+                                multibyteCurrentPassword,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+
+        assertPasswordUnchanged(user.getId());
+    }
+
+    @Test
     void unauthenticatedUserCannotChangePassword() throws Exception {
         mockMvc.perform(patch("/api/v1/users/me/password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -342,20 +363,22 @@ class UserApiIntegrationTest {
                 "secondNewPassword123!",
                 "secondNewPassword123!"
         );
+        CountDownLatch ready = new CountDownLatch(2);
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         try {
             Future<PasswordChangeResult> first = executor.submit(
-                    () -> changePasswordAfterStart(start, user.getId(), firstRequest)
+                    () -> changePasswordAfterStart(ready, start, user.getId(), firstRequest)
             );
             Future<PasswordChangeResult> second = executor.submit(
-                    () -> changePasswordAfterStart(start, user.getId(), secondRequest)
+                    () -> changePasswordAfterStart(ready, start, user.getId(), secondRequest)
             );
 
+            assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
             start.countDown();
-            PasswordChangeResult firstResult = first.get();
-            PasswordChangeResult secondResult = second.get();
+            PasswordChangeResult firstResult = first.get(10, TimeUnit.SECONDS);
+            PasswordChangeResult secondResult = second.get(10, TimeUnit.SECONDS);
 
             assertThat(new ErrorCode[]{firstResult.errorCode(), secondResult.errorCode()})
                     .containsExactlyInAnyOrder(null, ErrorCode.CURRENT_PASSWORD_MISMATCH);
@@ -461,10 +484,12 @@ class UserApiIntegrationTest {
     }
 
     private PasswordChangeResult changePasswordAfterStart(
+            CountDownLatch ready,
             CountDownLatch start,
             Long userId,
             ChangePasswordRequest request
     ) throws InterruptedException {
+        ready.countDown();
         start.await();
         try {
             userService.changePassword(userId, request);
