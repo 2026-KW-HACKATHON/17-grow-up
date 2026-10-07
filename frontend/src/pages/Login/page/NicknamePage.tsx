@@ -30,6 +30,8 @@ function NicknamePage() {
   }
 
   const handleComplete = async () => {
+    if (isLoading) return
+
     if (status !== 'available') {
       alert('닉네임을 확인해 주세요.')
       return

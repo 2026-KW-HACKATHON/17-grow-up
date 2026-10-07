@@ -16,6 +16,8 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async () => {
+    if (isLoading) return
+
     if (!loginId.trim() || !password) {
       alert('아이디 또는 이메일과 비밀번호를 입력해 주세요.')
       return
