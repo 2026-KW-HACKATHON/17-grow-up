@@ -1,30 +1,36 @@
-import type { MissionData } from '../data/missionData'
+import type { Mission } from '../../../api/missionApi'
 import './MissionInfoCard.css'
 
 interface MissionInfoCardProps {
-  mission: MissionData
+  mission: Mission
+  image: string
+  backgroundColor: string
 }
 
-function MissionInfoCard({ mission }: MissionInfoCardProps) {
+function MissionInfoCard({
+  mission,
+  image,
+  backgroundColor,
+}: MissionInfoCardProps) {
   return (
     <div className="mission-info-card">
       <div
         className="mission-info-card__image-box"
         style={{
-          backgroundColor: mission.backgroundColor,
+          backgroundColor,
         }}
       >
-        <img src={mission.image} alt={mission.title} />
+        <img src={image} alt={mission.name} />
       </div>
 
       <div className="mission-info-card__content">
-        <strong>{mission.title}</strong>
+        <strong>{mission.name}</strong>
 
         <span>{mission.category}</span>
 
         <div className="mission-info-card__point">
           <img src="/point-coin.svg" alt="" />
-          <span>{mission.point}</span>
+          <span>{mission.rewardPoints}</span>
         </div>
       </div>
     </div>
