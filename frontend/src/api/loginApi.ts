@@ -42,8 +42,20 @@ export async function signup(
   const result = await response.json()
 
   if (!response.ok || !result.success) {
+    console.error(
+      '회원가입 실패:',
+      response.status,
+      result.error,
+    )
+
     throw new Error(result.error?.code ?? 'SIGNUP_FAILED')
   }
+
+  console.log(
+    '회원가입 성공:',
+    response.status,
+    result.data,
+  )
 
   return result.data
 }
@@ -62,8 +74,20 @@ export async function login(
   const result = await response.json()
 
   if (!response.ok || !result.success) {
+    console.error(
+      '로그인 실패:',
+      response.status,
+      result.error,
+    )
+
     throw new Error(result.error?.code ?? 'LOGIN_FAILED')
   }
+
+  console.log(
+    '로그인 성공:',
+    response.status,
+    result.data,
+  )
 
   return result.data
 }
