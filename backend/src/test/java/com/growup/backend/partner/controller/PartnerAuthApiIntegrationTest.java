@@ -65,6 +65,7 @@ class PartnerAuthApiIntegrationTest {
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.data.expiresIn").value(3600))
+                .andExpect(jsonPath("$.data.user").doesNotExist())
                 .andExpect(jsonPath("$.data.partner").doesNotExist())
                 .andReturn()
                 .getResponse()

@@ -8,8 +8,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.growup.backend.auth.dto.AccessTokenResponse;
 import com.growup.backend.auth.dto.LoginRequest;
+import com.growup.backend.auth.dto.LoginResponse;
 import com.growup.backend.auth.dto.SignupRequest;
 import com.growup.backend.auth.dto.SignupResponse;
 import com.growup.backend.global.exception.BusinessException;
@@ -148,11 +148,13 @@ class AuthServiceTest {
         when(jwtTokenProvider.createAccessToken(7L, Role.USER)).thenReturn("access-token");
         when(jwtTokenProvider.getAccessTokenExpirationSeconds()).thenReturn(3600L);
 
-        AccessTokenResponse response = authService.login(request);
+        LoginResponse response = authService.login(request);
 
         assertThat(response.accessToken()).isEqualTo("access-token");
         assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(3600L);
+        assertThat(response.user().id()).isEqualTo(7L);
+        assertThat(response.user().nickname()).isEqualTo("새싹이");
     }
 
     @Test

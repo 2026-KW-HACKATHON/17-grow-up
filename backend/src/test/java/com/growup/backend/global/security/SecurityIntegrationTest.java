@@ -2,6 +2,8 @@ package com.growup.backend.global.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +17,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "cors.allowed-origins=http://localhost:5173,https://17-grow-up.vercel.app"
+})
 @AutoConfigureMockMvc
 class SecurityIntegrationTest {
 
@@ -92,6 +96,22 @@ class SecurityIntegrationTest {
                 "\"code\":\"FORBIDDEN\"",
                 "접근 권한이 없습니다."
         );
+    }
+
+    @Test
+    void configuredDeploymentOriginIsAllowedForCorsPreflight() throws Exception {
+        mockMvc.perform(options("/api/v1/auth/login")
+                        .header(HttpHeaders.ORIGIN, "https://17-grow-up.vercel.app")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
+                        "https://17-grow-up.vercel.app"
+                ))
+                .andExpect(header().string(
+                        HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS,
+                        "true"
+                ));
     }
 
     private void expectUnauthorized(String token) throws Exception {

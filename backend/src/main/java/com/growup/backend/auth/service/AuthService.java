@@ -1,7 +1,7 @@
 package com.growup.backend.auth.service;
 
-import com.growup.backend.auth.dto.AccessTokenResponse;
 import com.growup.backend.auth.dto.LoginRequest;
+import com.growup.backend.auth.dto.LoginResponse;
 import com.growup.backend.auth.dto.SignupRequest;
 import com.growup.backend.auth.dto.SignupResponse;
 import com.growup.backend.global.exception.BusinessException;
@@ -59,7 +59,7 @@ public class AuthService {
         }
     }
 
-    public AccessTokenResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByLoginId(request.loginId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_LOGIN));
 
@@ -68,9 +68,10 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), Role.USER);
-        return AccessTokenResponse.bearer(
+        return LoginResponse.bearer(
                 accessToken,
-                jwtTokenProvider.getAccessTokenExpirationSeconds()
+                jwtTokenProvider.getAccessTokenExpirationSeconds(),
+                user
         );
     }
 

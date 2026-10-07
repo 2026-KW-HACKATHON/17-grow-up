@@ -72,7 +72,9 @@ class AuthApiIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.data.expiresIn").value(3600));
+                .andExpect(jsonPath("$.data.expiresIn").value(3600))
+                .andExpect(jsonPath("$.data.user.id").value(savedUser.getId()))
+                .andExpect(jsonPath("$.data.user.nickname").value("새싹이"));
     }
 
     @Test
