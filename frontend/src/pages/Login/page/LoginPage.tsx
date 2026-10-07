@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { login } from '../../../api/loginApi'
+import { login, partnerLogin } from '../../../api/loginApi'
 import LoginButton from '../components/LoginButton'
 import LoginFooter from '../components/LoginFooter'
 import LoginInput from '../components/LoginInput'
@@ -26,22 +26,52 @@ function LoginPage() {
     try {
       setIsLoading(true)
 
-      const data = await login({
+      try {
+        const data = await login({
+          loginId,
+          password,
+        })
+
+        localStorage.setItem('accessToken', data.accessToken)
+
+        navigate('/signup/welcome', {
+          replace: true,
+          state: {
+            nickname: data.user.nickname,
+          },
+        })
+
+        return
+      } catch (error) {
+        if (!(error instanceof Error) || error.message !== 'INVALID_LOGIN') {
+          throw error
+        }
+      }
+
+      const partnerData = await partnerLogin({
         loginId,
         password,
       })
 
-      localStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('accessToken', partnerData.accessToken)
 
-      navigate('/signup/welcome', {
+      navigate('/main', {
         replace: true,
-        state: {
-          nickname: data.user.nickname,
-        },
       })
     } catch (error) {
-      if (error instanceof Error && error.message === 'INVALID_LOGIN') {
+      if (
+        error instanceof Error &&
+        (
+          error.message === 'INVALID_LOGIN' ||
+          error.message === 'INVALID_PARTNER_LOGIN'
+        )
+      ) {
         alert('아이디 또는 이메일, 비밀번호를 확인해 주세요.')
+      } else if (
+        error instanceof Error &&
+        error.message === 'INACTIVE_PARTNER_ACCOUNT'
+      ) {
+        alert('비활성화된 제휴처 직원 계정입니다.')
       } else {
         alert('로그인에 실패했습니다.')
       }
