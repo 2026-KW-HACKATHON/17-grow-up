@@ -41,6 +41,10 @@ function MyPage() {
     setIsProfileEditModalOpen(false)
   }
 
+  const handleNicknameUpdate = (newNickname: string) => {
+    setNickname(newNickname)
+  }
+
   const handleLogoutClick = () => {
     setIsLogoutModalOpen(true)
   }
@@ -112,6 +116,8 @@ function MyPage() {
 
       {isProfileEditModalOpen && (
         <ProfileEditModal
+          currentNickname={nickname}
+          onNicknameUpdate={handleNicknameUpdate}
           onClose={handleProfileEditClose}
         />
       )}
