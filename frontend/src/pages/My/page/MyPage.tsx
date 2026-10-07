@@ -33,6 +33,10 @@ function MyPage() {
     navigate('/my/user-info')
   }
 
+  const handleRecordClick = () => {
+    navigate('/record')
+  }
+
   const handleProfileEditClick = () => {
     setIsProfileEditModalOpen(true)
   }
@@ -100,6 +104,7 @@ function MyPage() {
             <MyMenuItem
               icon="/history.svg"
               label="나의 기록"
+              onClick={handleRecordClick}
             />
 
             <MyMenuItem
