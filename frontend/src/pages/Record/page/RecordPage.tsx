@@ -230,7 +230,10 @@ function RecordPage() {
               <div className="record-page__stat">
                 <span>최고 기록</span>
 
-                <strong>-</strong>
+                <strong>
+                  {summary?.longestStreak ?? 0}
+                  <span>일</span>
+                </strong>
               </div>
 
               <div className="record-page__stat">

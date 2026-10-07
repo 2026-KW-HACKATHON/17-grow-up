@@ -1,13 +1,69 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { getPartnerMe, type PartnerMe } from '../../api/partnerApi'
 import { missions } from '../Mission/data/missionData'
+
 import './AdminMissionDetailPage.css'
 
 function AdminMissionDetailPage() {
   const navigate = useNavigate()
 
+  const [partnerInfo, setPartnerInfo] = useState<PartnerMe | null>(null)
+
+  useEffect(() => {
+    const fetchPartnerInfo = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          return
+        }
+
+        const data = await getPartnerMe(accessToken)
+
+        setPartnerInfo(data)
+      } catch (error) {
+        console.error('직원 및 제휴처 정보 조회 실패:', error)
+      }
+    }
+
+    fetchPartnerInfo()
+  }, [])
+
   return (
     <div className="admin-mission-page">
       <main className="admin-mission-page__content">
+        {partnerInfo && (
+          <section
+            style={{
+              marginBottom: '24px',
+            }}
+          >
+            <strong
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#111111',
+              }}
+            >
+              {partnerInfo.partner.partnerName}
+            </strong>
+
+            <span
+              style={{
+                display: 'block',
+                marginTop: '4px',
+                fontSize: '12px',
+                color: '#888888',
+              }}
+            >
+              {partnerInfo.employee.loginId} 직원
+            </span>
+          </section>
+        )}
+
         <section className="admin-mission-page__intro">
           <h1>
             손님의 실천을
@@ -42,6 +98,7 @@ function AdminMissionDetailPage() {
                 style={{
                   width: '100%',
                   minHeight: '96px',
+
                   padding: '10px 14px 10px 10px',
 
                   display: 'flex',
@@ -54,7 +111,9 @@ function AdminMissionDetailPage() {
                   background: '#ffffff',
 
                   textAlign: 'left',
+
                   cursor: 'pointer',
+
                   boxSizing: 'border-box',
                 }}
               >
@@ -70,6 +129,7 @@ function AdminMissionDetailPage() {
                     justifyContent: 'center',
 
                     borderRadius: '12px',
+
                     backgroundColor: mission.backgroundColor,
                   }}
                 >
@@ -150,7 +210,9 @@ function AdminMissionDetailPage() {
                   aria-hidden="true"
                   style={{
                     flexShrink: 0,
+
                     color: '#999999',
+
                     fontSize: '22px',
                     fontWeight: 300,
                   }}
