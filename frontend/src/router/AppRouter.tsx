@@ -25,6 +25,8 @@ import StoreDetailPage from '../pages/Mission/StoreDetailPage'
 import CharacterGrowthPage from '../pages/Main/CharacterGrowthPage'
 import AdminMissionDetailPage from '../pages/Admin/AdminMissionDetailPage'
 import AdminQrPage from '../pages/Admin/AdminQrPage'
+import FriendInvitePage from '../pages/Record/page/FriendInvitePage'
+
 function AppRouter() {
   return (
     <Routes>
@@ -65,6 +67,7 @@ function AppRouter() {
         path="/admin/mission/:missionId"
         element={<AdminMissionDetailPage />}
       />
+      <Route path="/invite/:inviteCode" element={<FriendInvitePage />} />
 
       <Route path="/admin/mission/:missionId/qr" element={<AdminQrPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
