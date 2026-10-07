@@ -1,7 +1,7 @@
 package com.growup.backend.auth.controller;
 
-import com.growup.backend.auth.dto.AccessTokenResponse;
 import com.growup.backend.auth.dto.LoginRequest;
+import com.growup.backend.auth.dto.LoginResponse;
 import com.growup.backend.auth.dto.SignupRequest;
 import com.growup.backend.auth.dto.SignupResponse;
 import com.growup.backend.auth.service.AuthService;
@@ -33,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<AccessTokenResponse> login(
+    public ApiResponse<LoginResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
         return ApiResponse.success(authService.login(request));
