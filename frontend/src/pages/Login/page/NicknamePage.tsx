@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+import { signup } from '../../../api/loginApi'
 import LoginButton from '../components/LoginButton'
 import LoginFooter from '../components/LoginFooter'
 import LoginLayout from '../components/LoginLayout'
@@ -12,11 +13,12 @@ function NicknamePage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const email = location.state?.email ?? ''
+  const loginId = location.state?.loginId ?? ''
   const password = location.state?.password ?? ''
 
   const [nickname, setNickname] = useState('')
   const [status, setStatus] = useState<NicknameStatus>('idle')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleCheckNickname = () => {
     if (!nickname.trim()) {
@@ -27,14 +29,56 @@ function NicknamePage() {
     setStatus('available')
   }
 
-  const handleComplete = () => {
-    navigate('/signup/welcome', {
-      state: {
-        email,
+  const handleComplete = async () => {
+    if (isLoading) return
+
+    if (status !== 'available') {
+      alert('닉네임을 확인해 주세요.')
+      return
+    }
+
+    if (!loginId || !password) {
+      alert('회원가입 정보를 다시 입력해 주세요.')
+      navigate('/signup')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      await signup({
+        loginId,
         password,
         nickname,
-      },
-    })
+      })
+
+      navigate('/login', { replace: true })
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.message) {
+          case 'INVALID_LOGIN_ID':
+            alert('이메일 형식이 올바르지 않습니다.')
+            break
+
+          case 'INVALID_PASSWORD':
+            alert('비밀번호 형식이 올바르지 않습니다.')
+            break
+
+          case 'INVALID_NICKNAME':
+            alert('닉네임 형식이 올바르지 않습니다.')
+            break
+
+          case 'DUPLICATE_LOGIN_ID':
+            alert('이미 사용 중인 이메일입니다.')
+            break
+
+          default:
+            alert('회원가입에 실패했습니다.')
+        }
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -69,7 +113,7 @@ function NicknamePage() {
 
         {status === 'available' && (
           <p className="nickname-page__message nickname-page__message--success">
-            사용 가능 닉네임입니다!
+            사용 가능한 닉네임입니다!
           </p>
         )}
 
@@ -81,7 +125,7 @@ function NicknamePage() {
 
         <div className="nickname-page__action">
           <LoginButton onClick={handleComplete}>
-            확인
+            {isLoading ? '가입 중...' : '확인'}
           </LoginButton>
 
           <LoginFooter

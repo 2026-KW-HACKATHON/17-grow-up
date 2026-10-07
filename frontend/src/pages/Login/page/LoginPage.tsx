@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { login } from '../../../api/loginApi'
 import LoginButton from '../components/LoginButton'
 import LoginFooter from '../components/LoginFooter'
 import LoginInput from '../components/LoginInput'
@@ -10,8 +11,44 @@ import './LoginPage.css'
 function LoginPage() {
   const navigate = useNavigate()
 
-  const [email, setEmail] = useState('')
+  const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleLogin = async () => {
+    if (isLoading) return
+
+    if (!loginId.trim() || !password) {
+      alert('아이디 또는 이메일과 비밀번호를 입력해 주세요.')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      const data = await login({
+        loginId,
+        password,
+      })
+
+      localStorage.setItem('accessToken', data.accessToken)
+
+      navigate('/signup/welcome', {
+        replace: true,
+        state: {
+          nickname: data.user.nickname,
+        },
+      })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'INVALID_LOGIN') {
+        alert('아이디 또는 이메일, 비밀번호를 확인해 주세요.')
+      } else {
+        alert('로그인에 실패했습니다.')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <LoginLayout>
@@ -32,9 +69,9 @@ function LoginPage() {
 
         <div className="login-page__inputs">
           <LoginInput
-            placeholder="이메일"
-            value={email}
-            onChange={setEmail}
+            placeholder="아이디 또는 이메일"
+            value={loginId}
+            onChange={setLoginId}
           />
 
           <LoginInput
@@ -46,8 +83,8 @@ function LoginPage() {
         </div>
 
         <div className="login-page__action">
-          <LoginButton onClick={() => navigate('/main')}>
-            로그인
+          <LoginButton onClick={handleLogin}>
+            {isLoading ? '로그인 중...' : '로그인'}
           </LoginButton>
 
           <LoginFooter

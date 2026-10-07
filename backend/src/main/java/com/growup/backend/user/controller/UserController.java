@@ -2,6 +2,7 @@ package com.growup.backend.user.controller;
 
 import com.growup.backend.global.response.ApiResponse;
 import com.growup.backend.global.security.AuthPrincipal;
+import com.growup.backend.user.dto.ChangePasswordRequest;
 import com.growup.backend.user.dto.QrTokenResponse;
 import com.growup.backend.user.dto.UpdateNicknameRequest;
 import com.growup.backend.user.dto.UpdateNicknameResponse;
@@ -44,5 +45,14 @@ public class UserController {
             @Valid @RequestBody UpdateNicknameRequest request
     ) {
         return ApiResponse.success(userService.updateNickname(principal.accountId(), request));
+    }
+
+    @PatchMapping("/me/password")
+    public ApiResponse<Void> changePassword(
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        userService.changePassword(principal.accountId(), request);
+        return ApiResponse.success(null);
     }
 }
