@@ -4,6 +4,7 @@ export interface RecordSummary {
   totalCarbonG: number
   totalMissionCount: number
   currentStreak: number
+  longestStreak: number
 }
 
 export interface RecordHistory {
