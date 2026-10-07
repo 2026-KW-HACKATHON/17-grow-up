@@ -22,6 +22,7 @@ import MissionQrPage from '../pages/Mission/MissionQrPage'
 import MissionSuccessPage from '../pages/Mission/MissionSuccessPage'
 import AlarmPage from '../pages/Main/AlarmPage'
 import StoreDetailPage from '../pages/Mission/StoreDetailPage'
+import CharacterGrowthPage from '../pages/Main/CharacterGrowthPage'
 
 function AppRouter() {
   return (
@@ -53,13 +54,12 @@ function AppRouter() {
 
       <Route path="/my" element={<MyPage />} />
       <Route path="/my/user-info" element={<UserInfoPage />} />
-      <Route
-        path="/my/user-info/password"
-        element={<PasswordChangePage />}
-      />
+      <Route path="/my/user-info/password" element={<PasswordChangePage />} />
 
       <Route path="/stores" element={<StoreDetailPage />} />
       <Route path="/alarm" element={<AlarmPage />} />
+
+      <Route path="/growth" element={<CharacterGrowthPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

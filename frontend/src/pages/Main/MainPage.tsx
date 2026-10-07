@@ -127,7 +127,11 @@ function MainPage() {
             <span className="main-page__chevron">›</span>
           </button>
 
-          <div className="main-page__summary-card">
+          <button
+            type="button"
+            className="main-page__summary-card"
+            onClick={() => navigate('/growth')}
+          >
             <img src="/carbon-icon.svg" alt="" />
 
             <div>
@@ -136,7 +140,9 @@ function MainPage() {
                 12.8 <small>kg CO₂e</small>
               </strong>
             </div>
-          </div>
+
+            <span className="main-page__chevron">›</span>
+          </button>
         </section>
 
         <section className="main-page__streak-card">
