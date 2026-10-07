@@ -1,9 +1,27 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../../components/BottomNav/BottomNav'
+import { getMyInfo } from '../../../api/userApi'
 import './UserInfoPage.css'
 
 function UserInfoPage() {
   const navigate = useNavigate()
+
+  const [loginId, setLoginId] = useState('')
+
+  useEffect(() => {
+    const fetchMyInfo = async () => {
+      try {
+        const data = await getMyInfo()
+        setLoginId(data.loginId)
+      } catch (error) {
+        console.error('내 정보 조회 실패:', error)
+      }
+    }
+
+    fetchMyInfo()
+  }, [])
 
   const handleBack = () => {
     navigate(-1)
@@ -31,7 +49,7 @@ function UserInfoPage() {
           <div className="user-info-page__email">
             <strong className="user-info-page__label">이메일</strong>
             <span className="user-info-page__email-value">
-              kimtantan@kw.ac.kr
+              {loginId}
             </span>
           </div>
 
