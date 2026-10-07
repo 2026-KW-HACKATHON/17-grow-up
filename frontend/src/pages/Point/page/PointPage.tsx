@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { getMyInfo } from '../../../api/userApi'
 import BottomNav from '../../../components/BottomNav/BottomNav'
 import PointHistoryItem from '../components/PointHistoryItem'
 import PointTabs, { type PointTabType } from '../components/PointTabs'
@@ -75,7 +77,22 @@ const pointHistory: PointHistory[] = [
 
 function PointPage() {
   const [activeTab, setActiveTab] = useState<PointTabType>('earn')
+  const [availablePoints, setAvailablePoints] = useState(0)
+
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchPointStatus = async () => {
+      try {
+        const data = await getMyInfo()
+        setAvailablePoints(data.availablePoints)
+      } catch (error) {
+        console.error('포인트 현황 조회 실패:', error)
+      }
+    }
+
+    fetchPointStatus()
+  }, [])
 
   return (
     <div className="point-page">
@@ -105,7 +122,7 @@ function PointPage() {
               alt=""
             />
 
-            <strong>1,230 P</strong>
+            <strong>{availablePoints.toLocaleString()} P</strong>
           </div>
 
           <p className="point-page__monthly">
