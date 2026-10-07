@@ -1,0 +1,273 @@
+.admin-qr-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+
+  margin: 0 auto;
+
+  background: #ffffff;
+  color: #111111;
+}
+
+.admin-qr-page__content {
+  position: relative;
+
+  min-height: 100vh;
+
+  padding: 48px 28px 40px;
+
+  box-sizing: border-box;
+}
+
+.admin-qr-page__close {
+  position: absolute;
+
+  top: 48px;
+  right: 24px;
+
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: #aaaaaa;
+
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+
+  cursor: pointer;
+
+  z-index: 5;
+}
+
+.admin-qr-page__header {
+  text-align: center;
+}
+
+.admin-qr-page__header h1 {
+  margin: 0;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.admin-qr-page__header h2 {
+  margin: 38px 0 0;
+
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.admin-qr-page__header p {
+  margin: 17px 0 0;
+
+  color: #999999;
+
+  font-size: 12px;
+}
+
+/* CAMERA */
+
+.admin-qr-page__camera {
+  position: relative;
+
+  width: 220px;
+  height: 190px;
+
+  margin: 38px auto 0;
+
+  overflow: hidden;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.admin-qr-page__video {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.admin-qr-page__camera-error {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #999999;
+
+  font-size: 12px;
+}
+
+/* QR SCANNER FRAME */
+
+.admin-qr-page__scanner {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+}
+
+.admin-qr-page__corner {
+  position: absolute;
+
+  width: 48px;
+  height: 48px;
+
+  border-color: #9fc4a7;
+  border-style: solid;
+}
+
+.admin-qr-page__corner--tl {
+  top: 8px;
+  left: 8px;
+
+  border-width: 15px 0 0 15px;
+  border-radius: 12px 0 0 0;
+}
+
+.admin-qr-page__corner--tr {
+  top: 8px;
+  right: 8px;
+
+  border-width: 15px 15px 0 0;
+  border-radius: 0 12px 0 0;
+}
+
+.admin-qr-page__corner--bl {
+  bottom: 8px;
+  left: 8px;
+
+  border-width: 0 0 15px 15px;
+  border-radius: 0 0 0 12px;
+}
+
+.admin-qr-page__corner--br {
+  right: 8px;
+  bottom: 8px;
+
+  border-width: 0 15px 15px 0;
+  border-radius: 0 0 12px 0;
+}
+
+.admin-qr-page__scan-line {
+  position: absolute;
+
+  top: 50%;
+  left: 8px;
+  right: 8px;
+
+  height: 14px;
+
+  transform: translateY(-50%);
+
+  border-radius: 2px;
+
+  background: #9fc4a7;
+}
+
+/* TIMER */
+
+.admin-qr-page__timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 17px;
+
+  color: #666666;
+
+  font-size: 13px;
+}
+
+/* MISSION */
+
+.admin-qr-page__mission {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 28px;
+  padding: 12px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.admin-qr-page__mission-image {
+  width: 72px;
+  height: 72px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+}
+
+.admin-qr-page__mission-image img {
+  width: 55px;
+  height: 55px;
+
+  object-fit: contain;
+}
+
+.admin-qr-page__mission-info {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 3px;
+}
+
+.admin-qr-page__mission-info > strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-qr-page__mission-info > span {
+  color: #888888;
+
+  font-size: 11px;
+}
+
+.admin-qr-page__point {
+  display: flex;
+  align-items: center;
+
+  gap: 3px;
+
+  margin-top: 3px;
+}
+
+.admin-qr-page__point img {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-qr-page__point strong {
+  font-size: 11px;
+  font-weight: 700;
+}
