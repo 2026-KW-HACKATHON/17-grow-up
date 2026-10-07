@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserQRCodeReader } from '@zxing/browser'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+
 import { verifyMission } from '../../api/verificationApi'
 import { missions } from '../Mission/data/missionData'
+
 import './AdminQrPage.css'
 
 function AdminQrPage() {
@@ -10,6 +12,7 @@ function AdminQrPage() {
   const navigate = useNavigate()
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
+
   const [cameraError, setCameraError] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [verificationError, setVerificationError] = useState('')
@@ -44,19 +47,17 @@ function AdminQrPage() {
             setVerificationError('')
 
             try {
-              const partnerAccessToken =
-                localStorage.getItem('partnerAccessToken')
+              const accessToken = localStorage.getItem('accessToken')
 
-              if (!partnerAccessToken) {
+              if (!accessToken) {
                 setVerificationError('제휴처 직원 로그인이 필요합니다.')
-
                 alreadyScanned = false
                 return
               }
 
               const qrToken = result.getText()
 
-              const verification = await verifyMission(partnerAccessToken, {
+              const verification = await verifyMission(accessToken, {
                 qrToken,
                 missionId: Number(missionId),
               })
@@ -100,6 +101,8 @@ function AdminQrPage() {
                   default:
                     setVerificationError('미션 인증에 실패했습니다.')
                 }
+              } else {
+                setVerificationError('미션 인증에 실패했습니다.')
               }
 
               alreadyScanned = false
@@ -182,6 +185,7 @@ function AdminQrPage() {
           {verificationError && (
             <p className="admin-qr-page__error">{verificationError}</p>
           )}
+
           <span>◷</span>
           <span>04:57</span>
         </div>
@@ -198,10 +202,12 @@ function AdminQrPage() {
 
           <div className="admin-qr-page__mission-info">
             <strong>{mission.title}</strong>
+
             <span>{mission.category}</span>
 
             <div className="admin-qr-page__point">
               <img src="/point-coin.svg" alt="" />
+
               <strong>{mission.point}</strong>
             </div>
           </div>

@@ -63,13 +63,11 @@ function AppRouter() {
       <Route path="/alarm" element={<AlarmPage />} />
 
       <Route path="/growth" element={<CharacterGrowthPage />} />
-      <Route
-        path="/admin/mission/:missionId"
-        element={<AdminMissionDetailPage />}
-      />
-      <Route path="/invite/:inviteCode" element={<FriendInvitePage />} />
+      <Route path="/admin/mission" element={<AdminMissionDetailPage />} />
 
       <Route path="/admin/mission/:missionId/qr" element={<AdminQrPage />} />
+      <Route path="/invite/:inviteCode" element={<FriendInvitePage />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

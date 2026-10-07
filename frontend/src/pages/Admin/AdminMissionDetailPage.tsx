@@ -1,72 +1,166 @@
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { missions } from '../Mission/data/missionData'
 import './AdminMissionDetailPage.css'
 
 function AdminMissionDetailPage() {
-  const { missionId } = useParams()
   const navigate = useNavigate()
-
-  const mission = missions.find((item) => item.id === missionId)
-
-  if (!mission) {
-    return <Navigate to="/main" replace />
-  }
 
   return (
     <div className="admin-mission-page">
       <main className="admin-mission-page__content">
-        <button
-          type="button"
-          className="admin-mission-page__back"
-          onClick={() => navigate(-1)}
-          aria-label="뒤로가기"
-        >
-          ‹
-        </button>
-
-        <section
-          className="admin-mission-page__image-box"
-          style={{
-            backgroundColor: mission.backgroundColor,
-          }}
-        >
-          <img src={mission.image} alt={mission.title} />
-        </section>
-
         <section className="admin-mission-page__intro">
-          <span className="admin-mission-page__category">
-            {mission.category}
-          </span>
-
-          <h1>{mission.title}</h1>
-
-          <p>{mission.description}</p>
+          <h1>
+            손님의 실천을
+            <br />
+            인증 받아 주세요
+          </h1>
         </section>
 
-        <section className="admin-mission-page__info">
-          <div>
-            <span>지급 포인트</span>
-            <strong>{mission.point}P</strong>
-          </div>
+        <section style={{ marginTop: '28px' }}>
+          <h2
+            style={{
+              margin: '0 0 12px',
+              fontSize: '15px',
+              fontWeight: 700,
+            }}
+          >
+            미션 목록
+          </h2>
 
-          <div>
-            <span>탄소 감축량</span>
-            <strong>{mission.carbon}gCO₂e</strong>
-          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+            }}
+          >
+            {missions.map((mission) => (
+              <button
+                key={mission.id}
+                type="button"
+                onClick={() => navigate(`/admin/mission/${mission.id}/qr`)}
+                style={{
+                  width: '100%',
+                  minHeight: '96px',
+                  padding: '10px 14px 10px 10px',
 
-          <div>
-            <span>인증 가능 매장</span>
-            <strong>{mission.availablePlace}</strong>
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+
+                  border: '1px solid #eeeeee',
+                  borderRadius: '14px',
+
+                  background: '#ffffff',
+
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <div
+                  style={{
+                    width: '86px',
+                    height: '76px',
+
+                    flexShrink: 0,
+
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+
+                    borderRadius: '12px',
+                    backgroundColor: mission.backgroundColor,
+                  }}
+                >
+                  <img
+                    src={mission.image}
+                    alt={mission.title}
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <strong
+                    style={{
+                      color: '#111111',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {mission.title}
+                  </strong>
+
+                  <span
+                    style={{
+                      marginTop: '2px',
+
+                      color: '#888888',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {mission.category}
+                  </span>
+
+                  <div
+                    style={{
+                      marginTop: '6px',
+
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                    }}
+                  >
+                    <img
+                      src="/point-coin.svg"
+                      alt=""
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        color: '#111111',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {mission.point}
+                    </span>
+                  </div>
+                </div>
+
+                <span
+                  aria-hidden="true"
+                  style={{
+                    flexShrink: 0,
+                    color: '#999999',
+                    fontSize: '22px',
+                    fontWeight: 300,
+                  }}
+                >
+                  ›
+                </span>
+              </button>
+            ))}
           </div>
         </section>
-
-        <button
-          type="button"
-          className="admin-mission-page__qr-button"
-          onClick={() => navigate(`/admin/mission/${mission.id}/qr`)}
-        >
-          QR 인증 시작하기
-        </button>
       </main>
     </div>
   )
