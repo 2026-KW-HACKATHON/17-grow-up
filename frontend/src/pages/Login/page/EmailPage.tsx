@@ -12,8 +12,15 @@ function EmailPage() {
   const [loginId, setLoginId] = useState('')
 
   const handleNext = () => {
+    const trimmedLoginId = loginId.trim()
+
+    if (!trimmedLoginId) {
+      alert('이메일을 입력해 주세요.')
+      return
+    }
+
     navigate('/signup/password', {
-      state: { loginId },
+      state: { loginId: trimmedLoginId },
     })
   }
 
