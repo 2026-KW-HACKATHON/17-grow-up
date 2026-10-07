@@ -1,21 +1,66 @@
 import { useState } from 'react'
+
+import { updateNickname } from '../../../api/userApi'
 import './ProfileEditModal.css'
 
 interface ProfileEditModalProps {
+  currentNickname: string
+  onNicknameUpdate: (nickname: string) => void
   onClose: () => void
 }
 
-function ProfileEditModal({ onClose }: ProfileEditModalProps) {
-  const [nickname, setNickname] = useState('김탄탄')
+function ProfileEditModal({
+  currentNickname,
+  onNicknameUpdate,
+  onClose,
+}: ProfileEditModalProps) {
+  const [nickname, setNickname] = useState(currentNickname)
   const [isEditingNickname, setIsEditingNickname] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleNicknameChange = () => {
     setIsEditingNickname(true)
   }
 
-  const handleSave = () => {
-    // 추후 프로필 수정 API 연결
-    onClose()
+  const handleSave = async () => {
+    if (isLoading) return
+
+    if (!isEditingNickname || nickname === currentNickname) {
+      onClose()
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      const data = await updateNickname({
+        nickname,
+      })
+
+      onNicknameUpdate(data.nickname)
+      onClose()
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'INVALID_NICKNAME') {
+          alert('닉네임 형식이 올바르지 않습니다.')
+          return
+        }
+
+        if (error.message === 'UNAUTHORIZED') {
+          alert('로그인이 필요합니다.')
+          return
+        }
+
+        if (error.message === 'USER_NOT_FOUND') {
+          alert('사용자를 찾을 수 없습니다.')
+          return
+        }
+      }
+
+      alert('닉네임 수정에 실패했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCancel = () => {
@@ -79,6 +124,7 @@ function ProfileEditModal({ onClose }: ProfileEditModalProps) {
             type="button"
             className="profile-edit-modal__save"
             onClick={handleSave}
+            disabled={isLoading}
           >
             저장
           </button>
@@ -87,6 +133,7 @@ function ProfileEditModal({ onClose }: ProfileEditModalProps) {
             type="button"
             className="profile-edit-modal__cancel"
             onClick={handleCancel}
+            disabled={isLoading}
           >
             취소
           </button>
