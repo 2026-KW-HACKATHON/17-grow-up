@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { getPointConversions, type PointConversion } from '../../../api/pointApi'
 import { getMyInfo } from '../../../api/userApi'
 import BottomNav from '../../../components/BottomNav/BottomNav'
 import PointHistoryItem from '../components/PointHistoryItem'
@@ -75,23 +76,42 @@ const pointHistory: PointHistory[] = [
   },
 ]
 
+function formatConversionTime(createdAt: string) {
+  const date = new Date(createdAt)
+
+  return date.toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function PointPage() {
   const [activeTab, setActiveTab] = useState<PointTabType>('earn')
   const [availablePoints, setAvailablePoints] = useState(0)
+  const [totalEarnedPoints, setTotalEarnedPoints] = useState(0)
+  const [conversions, setConversions] = useState<PointConversion[]>([])
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchPointStatus = async () => {
+    const fetchPointData = async () => {
       try {
-        const data = await getMyInfo()
-        setAvailablePoints(data.availablePoints)
+        const [userData, conversionData] = await Promise.all([
+          getMyInfo(),
+          getPointConversions(),
+        ])
+
+        setAvailablePoints(userData.availablePoints)
+        setTotalEarnedPoints(userData.totalEarnedPoints)
+        setConversions(conversionData.conversions)
       } catch (error) {
-        console.error('포인트 현황 조회 실패:', error)
+        console.error('포인트 정보 조회 실패:', error)
       }
     }
 
-    fetchPointStatus()
+    fetchPointData()
   }, [])
 
   return (
@@ -126,7 +146,8 @@ function PointPage() {
           </div>
 
           <p className="point-page__monthly">
-            이번 달에 <span>+320</span>을 모았어요!
+            지금까지{' '}
+            <span>+{totalEarnedPoints.toLocaleString()}P</span>를 모았어요!
           </p>
         </section>
 
@@ -145,6 +166,17 @@ function PointPage() {
                 place={history.place}
                 point={history.point}
                 time={history.time}
+              />
+            ))
+          ) : conversions.length > 0 ? (
+            conversions.map((conversion) => (
+              <PointHistoryItem
+                key={conversion.conversionId}
+                icon="/point-coin.svg"
+                title="서울페이 전환"
+                place={`${conversion.seoulPayAmount.toLocaleString()}원 전환`}
+                point={-conversion.convertedPoints}
+                time={formatConversionTime(conversion.createdAt)}
               />
             ))
           ) : (
