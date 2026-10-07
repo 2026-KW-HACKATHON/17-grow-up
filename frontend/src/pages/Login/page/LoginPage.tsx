@@ -14,7 +14,6 @@ function LoginPage() {
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
   const handleLogin = async () => {
     if (isLoading) return
 
@@ -55,16 +54,14 @@ function LoginPage() {
 
       localStorage.setItem('accessToken', partnerData.accessToken)
 
-      navigate('/main', {
+      navigate('/admin/mission', {
         replace: true,
       })
     } catch (error) {
       if (
         error instanceof Error &&
-        (
-          error.message === 'INVALID_LOGIN' ||
-          error.message === 'INVALID_PARTNER_LOGIN'
-        )
+        (error.message === 'INVALID_LOGIN' ||
+          error.message === 'INVALID_PARTNER_LOGIN')
       ) {
         alert('아이디 또는 이메일, 비밀번호를 확인해 주세요.')
       } else if (
