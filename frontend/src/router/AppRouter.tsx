@@ -23,7 +23,8 @@ import MissionSuccessPage from '../pages/Mission/MissionSuccessPage'
 import AlarmPage from '../pages/Main/AlarmPage'
 import StoreDetailPage from '../pages/Mission/StoreDetailPage'
 import CharacterGrowthPage from '../pages/Main/CharacterGrowthPage'
-
+import AdminMissionDetailPage from '../pages/Admin/AdminMissionDetailPage'
+import AdminQrPage from '../pages/Admin/AdminQrPage'
 function AppRouter() {
   return (
     <Routes>
@@ -60,7 +61,12 @@ function AppRouter() {
       <Route path="/alarm" element={<AlarmPage />} />
 
       <Route path="/growth" element={<CharacterGrowthPage />} />
+      <Route
+        path="/admin/mission/:missionId"
+        element={<AdminMissionDetailPage />}
+      />
 
+      <Route path="/admin/mission/:missionId/qr" element={<AdminQrPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

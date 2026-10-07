@@ -1,15 +1,60 @@
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import BottomNav from '../../components/BottomNav/BottomNav'
-import { missions } from './data/missionData'
+import { getMissions, type Mission } from '../../api/missionApi'
 import './MissionSuccessPage.css'
 
 function MissionSuccessPage() {
   const { missionId } = useParams()
   const navigate = useNavigate()
 
-  const mission = missions.find((item) => item.id === missionId)
+  const [mission, setMission] = useState<Mission | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  if (!mission) {
+  useEffect(() => {
+    const fetchMission = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const missions = await getMissions(accessToken)
+
+        const selectedMission = missions.find(
+          (item) => item.missionId === Number(missionId),
+        )
+
+        if (!selectedMission) {
+          setError('미션을 찾을 수 없습니다.')
+          return
+        }
+
+        setMission(selectedMission)
+      } catch {
+        setError('미션 정보를 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMission()
+  }, [missionId])
+
+  if (isLoading) {
+    return (
+      <div className="mission-success-page">
+        <main className="mission-success-page__content">
+          <p>미션 정보를 불러오는 중...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (error || !mission) {
     return <Navigate to="/mission" replace />
   }
 
@@ -35,7 +80,7 @@ function MissionSuccessPage() {
 
             <div className="mission-success-page__result-text">
               <span>획득 포인트</span>
-              <strong>+{mission.point}P</strong>
+              <strong>+{mission.rewardPoints}P</strong>
             </div>
           </div>
 
@@ -50,7 +95,7 @@ function MissionSuccessPage() {
 
             <div className="mission-success-page__result-text">
               <span>탄소 감축량</span>
-              <strong>+{mission.carbon}g CO₂e</strong>
+              <strong>+{mission.carbonReductionG}g CO₂e</strong>
             </div>
           </div>
         </section>

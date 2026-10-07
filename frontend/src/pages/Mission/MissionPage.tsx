@@ -1,11 +1,42 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../components/BottomNav/BottomNav'
 import MissionCard from './components/MissionCard'
-import { missions } from './data/missionData'
-import { useNavigate } from 'react-router-dom'
+import { getMissions, type Mission } from '../../api/missionApi'
+
 import './MissionPage.css'
 
 function MissionPage() {
   const navigate = useNavigate()
+
+  const [missions, setMissions] = useState<Mission[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const missionList = await getMissions(accessToken)
+
+        setMissions(missionList)
+      } catch {
+        setError('미션 목록을 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMissions()
+  }, [])
+
   return (
     <div className="mission-page">
       <main className="mission-page__content">
@@ -37,11 +68,19 @@ function MissionPage() {
         <section className="mission-page__list-section">
           <h2>미션 목록</h2>
 
-          <div className="mission-page__list">
-            {missions.map((mission) => (
-              <MissionCard key={mission.id} mission={mission} />
-            ))}
-          </div>
+          {isLoading && (
+            <p className="mission-page__message">미션을 불러오는 중...</p>
+          )}
+
+          {error && <p className="mission-page__message">{error}</p>}
+
+          {!isLoading && !error && (
+            <div className="mission-page__list">
+              {missions.map((mission) => (
+                <MissionCard key={mission.missionId} mission={mission} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
 
