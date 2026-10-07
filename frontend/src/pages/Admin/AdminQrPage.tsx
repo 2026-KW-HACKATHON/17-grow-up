@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { BrowserQRCodeReader } from '@zxing/browser'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { verifyMission } from '../../api/verificationApi'
 import { missions } from '../Mission/data/missionData'
 import './AdminQrPage.css'
 
@@ -9,39 +11,115 @@ function AdminQrPage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [cameraError, setCameraError] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [verificationError, setVerificationError] = useState('')
 
   const mission = missions.find((item) => item.id === missionId)
 
   useEffect(() => {
-    let stream: MediaStream | null = null
+    if (!videoRef.current || !missionId) {
+      return
+    }
 
-    const startCamera = async () => {
+    const codeReader = new BrowserQRCodeReader()
+
+    let controls: {
+      stop: () => void
+    } | null = null
+
+    let alreadyScanned = false
+
+    const startScanner = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: {
-              ideal: 'environment',
-            },
-          },
-          audio: false,
-        })
+        controls = await codeReader.decodeFromVideoDevice(
+          undefined,
+          videoRef.current!,
+          async (result) => {
+            if (!result || alreadyScanned) {
+              return
+            }
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-        }
-      } catch {
+            alreadyScanned = true
+            setIsVerifying(true)
+            setVerificationError('')
+
+            try {
+              const partnerAccessToken =
+                localStorage.getItem('partnerAccessToken')
+
+              if (!partnerAccessToken) {
+                setVerificationError('제휴처 직원 로그인이 필요합니다.')
+
+                alreadyScanned = false
+                return
+              }
+
+              const qrToken = result.getText()
+
+              const verification = await verifyMission(partnerAccessToken, {
+                qrToken,
+                missionId: Number(missionId),
+              })
+
+              console.log('미션 인증 성공:', verification)
+
+              controls?.stop()
+
+              navigate(`/admin/mission/${missionId}/success`, {
+                state: verification,
+              })
+            } catch (error) {
+              console.error('미션 인증 실패:', error)
+
+              if (error instanceof Error) {
+                switch (error.message) {
+                  case 'INVALID_QR_TOKEN':
+                    setVerificationError('유효하지 않은 QR 코드입니다.')
+                    break
+
+                  case 'EXPIRED_QR_TOKEN':
+                    setVerificationError('만료된 QR 코드입니다.')
+                    break
+
+                  case 'MISSION_ALREADY_COMPLETED':
+                    setVerificationError('오늘 이미 완료한 미션입니다.')
+                    break
+
+                  case 'MISSION_NOT_FOUND':
+                    setVerificationError('미션을 찾을 수 없습니다.')
+                    break
+
+                  case 'UNAUTHORIZED':
+                    setVerificationError('제휴처 직원 로그인이 필요합니다.')
+                    break
+
+                  case 'FORBIDDEN':
+                    setVerificationError('미션 인증 권한이 없습니다.')
+                    break
+
+                  default:
+                    setVerificationError('미션 인증에 실패했습니다.')
+                }
+              }
+
+              alreadyScanned = false
+            } finally {
+              setIsVerifying(false)
+            }
+          },
+        )
+      } catch (error) {
+        console.error('카메라 실행 실패:', error)
         setCameraError(true)
       }
     }
 
-    startCamera()
+    startScanner()
 
     return () => {
-      stream?.getTracks().forEach((track) => {
-        track.stop()
-      })
+      controls?.stop()
     }
-  }, [])
+  }, [missionId, navigate])
 
   if (!mission) {
     return <Navigate to="/main" replace />
@@ -97,6 +175,13 @@ function AdminQrPage() {
         </section>
 
         <div className="admin-qr-page__timer">
+          {isVerifying && (
+            <p className="admin-qr-page__status">미션을 인증하고 있어요...</p>
+          )}
+
+          {verificationError && (
+            <p className="admin-qr-page__error">{verificationError}</p>
+          )}
           <span>◷</span>
           <span>04:57</span>
         </div>
