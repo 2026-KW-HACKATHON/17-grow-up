@@ -11,15 +11,25 @@ function PasswordPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const email = location.state?.email ?? ''
+  const loginId = location.state?.loginId ?? ''
 
   const [password, setPassword] = useState('')
   const [passwordCheck, setPasswordCheck] = useState('')
 
   const handleNext = () => {
+    if (password.length < 8) {
+      alert('비밀번호는 8자 이상 입력해 주세요.')
+      return
+    }
+
+    if (password !== passwordCheck) {
+      alert('비밀번호가 일치하지 않습니다.')
+      return
+    }
+
     navigate('/signup/nickname', {
       state: {
-        email,
+        loginId,
         password,
       },
     })

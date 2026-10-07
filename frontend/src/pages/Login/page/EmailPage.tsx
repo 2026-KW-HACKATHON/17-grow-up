@@ -9,11 +9,11 @@ import './EmailPage.css'
 
 function EmailPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [loginId, setLoginId] = useState('')
 
   const handleNext = () => {
     navigate('/signup/password', {
-      state: { email },
+      state: { loginId },
     })
   }
 
@@ -27,8 +27,8 @@ function EmailPage() {
 
         <LoginInput
           placeholder="이메일"
-          value={email}
-          onChange={setEmail}
+          value={loginId}
+          onChange={setLoginId}
         />
 
         <div className="email-page__action">

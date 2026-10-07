@@ -8,7 +8,7 @@ function WelcomePage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const nickname = location.state?.nickname || '사용자'
+  const nickname = location.state?.nickname ?? '사용자'
 
   return (
     <LoginLayout>
