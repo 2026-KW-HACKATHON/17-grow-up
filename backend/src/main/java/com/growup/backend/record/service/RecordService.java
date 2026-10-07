@@ -41,7 +41,8 @@ public class RecordService {
         return new RecordSummaryResponse(
                 user.getTotalCarbonG(),
                 totalMissionCount,
-                user.getCurrentStreak()
+                user.getCurrentStreak(),
+                user.getLongestStreak()
         );
     }
 
