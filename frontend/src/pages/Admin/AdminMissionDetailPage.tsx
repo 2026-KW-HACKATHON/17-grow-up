@@ -22,7 +22,15 @@ function AdminMissionDetailPage() {
       () =>
         (location.state as MissionNavigationState | null)?.verification ?? null,
     )
+  const handleLogout = () => {
+    const confirmed = window.confirm('로그아웃하시겠습니까?')
 
+    if (!confirmed) return
+
+    localStorage.removeItem('accessToken')
+
+    navigate('/login', { replace: true })
+  }
   // 1. 직원 및 제휴처 정보 조회
   useEffect(() => {
     let cancelled = false
@@ -77,42 +85,29 @@ function AdminMissionDetailPage() {
   return (
     <div className="admin-mission-page">
       <main className="admin-mission-page__content">
-        {partnerInfo && (
-          <section
-            style={{
-              marginBottom: '24px',
-            }}
-          >
-            <strong
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#111111',
-              }}
-            >
-              {partnerInfo.partner.partnerName}
-            </strong>
-
-            <span
-              style={{
-                display: 'block',
-                marginTop: '4px',
-                fontSize: '12px',
-                color: '#888888',
-              }}
-            >
-              {partnerInfo.employee.loginId} 직원
-            </span>
-          </section>
-        )}
-
         <section className="admin-mission-page__intro">
-          <h1>
-            손님의 실천을
-            <br />
-            인증 받아 주세요
-          </h1>
+          <div className="admin-mission-page__intro-left">
+            <h1>
+              손님의 실천을
+              <br />
+              인증 받아 주세요
+            </h1>
+
+            {partnerInfo && (
+              <div className="admin-mission-page__partner-info">
+                <strong>{partnerInfo.partner.partnerName}</strong>
+                <span>{partnerInfo.employee.loginId} 직원</span>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="admin-mission-page__logout"
+            onClick={handleLogout}
+          >
+            로그아웃
+          </button>
         </section>
 
         <section style={{ marginTop: '28px' }}>
