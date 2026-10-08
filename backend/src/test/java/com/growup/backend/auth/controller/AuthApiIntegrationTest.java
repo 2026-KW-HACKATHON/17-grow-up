@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthApiIntegrationTest {
+
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,6 +63,7 @@ class AuthApiIntegrationTest {
         assertThat(savedUser.getPasswordHash()).isNotEqualTo("password123");
         assertThat(passwordEncoder.matches("password123", savedUser.getPasswordHash())).isTrue();
         assertThat(savedUser.getLastPracticeDate()).isNull();
+        LocalDateTime beforeLogin = LocalDateTime.now(KST_ZONE_ID);
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,6 +80,13 @@ class AuthApiIntegrationTest {
                 .andExpect(jsonPath("$.data.expiresIn").value(3600))
                 .andExpect(jsonPath("$.data.user.id").value(savedUser.getId()))
                 .andExpect(jsonPath("$.data.user.nickname").value("새싹이"));
+        LocalDateTime afterLogin = LocalDateTime.now(KST_ZONE_ID);
+
+        User loggedInUser = userRepository.findById(savedUser.getId()).orElseThrow();
+        assertThat(loggedInUser.getLastActiveAt()).isBetween(
+                beforeLogin.minusSeconds(1),
+                afterLogin.plusSeconds(1)
+        );
     }
 
     @Test

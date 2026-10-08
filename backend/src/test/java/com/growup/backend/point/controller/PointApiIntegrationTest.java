@@ -91,6 +91,7 @@ class PointApiIntegrationTest {
     @Test
     void convertsTwentyThousandPointsAndSavesHistory() throws Exception {
         User user = saveUser("growup", "ABCDEFGH", 30_000L);
+        LocalDateTime beforeConversion = LocalDateTime.now(KST_ZONE_ID);
 
         mockMvc.perform(post("/api/v1/points/conversions")
                         .header(HttpHeaders.AUTHORIZATION, userBearerToken(user.getId()))
@@ -107,6 +108,7 @@ class PointApiIntegrationTest {
                 .andExpect(jsonPath("$.data.seoulPayAmount").value(200))
                 .andExpect(jsonPath("$.data.remainingPoints").value(10_000))
                 .andExpect(jsonPath("$.data.createdAt").isNotEmpty());
+        LocalDateTime afterConversion = LocalDateTime.now(KST_ZONE_ID);
 
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updatedUser.getTotalCarbonG()).isEqualTo(230L);
@@ -119,6 +121,10 @@ class PointApiIntegrationTest {
         assertThat(conversions.getFirst().getUser().getId()).isEqualTo(user.getId());
         assertThat(conversions.getFirst().getConvertedPoints()).isEqualTo(20_000L);
         assertThat(conversions.getFirst().getSeoulPayAmount()).isEqualTo(200L);
+        assertThat(conversions.getFirst().getCreatedAt()).isBetween(
+                beforeConversion.minusSeconds(1),
+                afterConversion.plusSeconds(1)
+        );
     }
 
     @Test
