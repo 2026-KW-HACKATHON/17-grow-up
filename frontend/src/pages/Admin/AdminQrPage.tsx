@@ -7,6 +7,9 @@ import { missions } from '../Mission/data/missionData'
 
 import './AdminQrPage.css'
 
+// 카메라 시작과 종료가 겹치지 않도록 관리
+let scannerQueue: Promise<void> = Promise.resolve()
+
 function AdminQrPage() {
   const { missionId } = useParams()
   const navigate = useNavigate()
@@ -17,120 +20,186 @@ function AdminQrPage() {
   const [isVerifying, setIsVerifying] = useState(false)
   const [verificationError, setVerificationError] = useState('')
 
+  const [remainingSeconds, setRemainingSeconds] = useState(300)
+
   const mission = missions.find((item) => item.id === missionId)
 
+  const selectedMissionId = mission?.missionId
+
+  // 1. 5분 카운트다운
   useEffect(() => {
-    if (!videoRef.current || !missionId || !mission) {
+    const expiresAt = Date.now() + 5 * 60 * 1000
+
+    const updateTimer = () => {
+      const seconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))
+
+      setRemainingSeconds(seconds)
+    }
+
+    updateTimer()
+
+    const timer = window.setInterval(updateTimer, 1000)
+
+    return () => {
+      window.clearInterval(timer)
+    }
+  }, [])
+
+  // 2. QR 카메라 실행
+  useEffect(() => {
+    const videoElement = videoRef.current
+
+    if (!videoElement || !selectedMissionId) {
       return
     }
 
-    const codeReader = new BrowserQRCodeReader()
-
-    let controls: {
-      stop: () => void
-    } | null = null
-
+    let cancelled = false
     let alreadyScanned = false
 
-    const startScanner = async () => {
-      try {
-        controls = await codeReader.decodeFromVideoDevice(
-          undefined,
-          videoRef.current!,
-          async (result) => {
-            if (!result || alreadyScanned) {
-              return
-            }
+    let stopScanner: (() => void) | null = null
 
-            alreadyScanned = true
-            setIsVerifying(true)
-            setVerificationError('')
+    // 실행 중인 카메라 초기화가 끝나면 정리하도록 예약
+    const scannerTask = scannerQueue
+      .catch(() => {})
+      .then(async () => {
+        if (cancelled) return
 
-            try {
-              const accessToken = localStorage.getItem('accessToken')
+        const codeReader = new BrowserQRCodeReader()
 
-              if (!accessToken) {
-                setVerificationError('제휴처 직원 로그인이 필요합니다.')
-                alreadyScanned = false
+        try {
+          const controls = await codeReader.decodeFromVideoDevice(
+            undefined,
+            videoElement,
+            async (result) => {
+              if (!result || alreadyScanned || cancelled) {
                 return
               }
 
-              const qrToken = result.getText()
+              alreadyScanned = true
+              setIsVerifying(true)
+              setVerificationError('')
 
-              const verification = await verifyMission(accessToken, {
-                qrToken,
-                missionId: mission.missionId,
-              })
+              try {
+                const accessToken = localStorage.getItem('accessToken')
 
-              console.log('미션 인증 성공:', verification)
-
-              controls?.stop()
-
-              navigate(`/admin/mission/${missionId}/success`, {
-                state: verification,
-              })
-            } catch (error) {
-              console.error('미션 인증 실패:', error)
-
-              if (error instanceof Error) {
-                switch (error.message) {
-                  case 'INVALID_QR_TOKEN':
-                    setVerificationError('유효하지 않은 QR 코드입니다.')
-                    break
-
-                  case 'EXPIRED_QR_TOKEN':
-                    setVerificationError('만료된 QR 코드입니다.')
-                    break
-
-                  case 'MISSION_ALREADY_COMPLETED':
-                    setVerificationError('오늘 이미 완료한 미션입니다.')
-                    break
-
-                  case 'MISSION_NOT_FOUND':
-                    setVerificationError('미션을 찾을 수 없습니다.')
-                    break
-
-                  case 'UNAUTHORIZED':
-                    setVerificationError('제휴처 직원 로그인이 필요합니다.')
-                    break
-
-                  case 'FORBIDDEN':
-                    setVerificationError('미션 인증 권한이 없습니다.')
-                    break
-
-                  case 'VALIDATION_ERROR':
-                    setVerificationError('미션 정보가 올바르지 않습니다.')
-                    break
-
-                  default:
-                    setVerificationError('미션 인증에 실패했습니다.')
+                if (!accessToken) {
+                  setVerificationError('제휴처 직원 로그인이 필요합니다.')
+                  alreadyScanned = false
+                  return
                 }
-              } else {
-                setVerificationError('미션 인증에 실패했습니다.')
+
+                const qrToken = result.getText()
+
+                const verification = await verifyMission(accessToken, {
+                  qrToken,
+                  missionId: selectedMissionId,
+                })
+
+                if (cancelled) return
+
+                stopScanner?.()
+
+                navigate('/admin/mission', {
+                  replace: true,
+                  state: { verification },
+                })
+              } catch (error) {
+                if (cancelled) return
+
+                console.error('미션 인증 실패:', error)
+
+                if (error instanceof Error) {
+                  switch (error.message) {
+                    case 'INVALID_QR_TOKEN':
+                      setVerificationError('유효하지 않은 QR 코드입니다.')
+                      break
+
+                    case 'EXPIRED_QR_TOKEN':
+                      setVerificationError('만료된 QR 코드입니다.')
+                      break
+
+                    case 'MISSION_ALREADY_COMPLETED':
+                      setVerificationError('오늘 이미 완료한 미션입니다.')
+                      break
+
+                    case 'MISSION_NOT_FOUND':
+                      setVerificationError('미션을 찾을 수 없습니다.')
+                      break
+
+                    case 'UNAUTHORIZED':
+                      setVerificationError('제휴처 직원 로그인이 필요합니다.')
+                      break
+
+                    case 'FORBIDDEN':
+                      setVerificationError('미션 인증 권한이 없습니다.')
+                      break
+
+                    case 'VALIDATION_ERROR':
+                      setVerificationError('미션 정보가 올바르지 않습니다.')
+                      break
+
+                    default:
+                      setVerificationError('미션 인증에 실패했습니다.')
+                  }
+                } else {
+                  setVerificationError('미션 인증에 실패했습니다.')
+                }
+
+                alreadyScanned = false
+              } finally {
+                if (!cancelled) {
+                  setIsVerifying(false)
+                }
               }
+            },
+          )
 
-              alreadyScanned = false
-            } finally {
-              setIsVerifying(false)
-            }
-          },
-        )
-      } catch (error) {
-        console.error('카메라 실행 실패:', error)
-        setCameraError(true)
-      }
-    }
+          stopScanner = () => controls.stop()
 
-    startScanner()
+          // 비동기 실행 도중 페이지가 닫힌 경우
+          if (cancelled) {
+            controls.stop()
+          }
+        } catch (error) {
+          if (!cancelled) {
+            console.error('카메라 실행 실패:', error)
+            setCameraError(true)
+          }
+        }
+      })
+
+    // 다음 스캐너 실행은 이 스캐너가 정리된 후 시작
+    let finishCleanup: (() => void) | null = null
+
+    const cleanupPromise = new Promise<void>((resolve) => {
+      finishCleanup = resolve
+    })
+
+    scannerQueue = scannerTask.then(() => cleanupPromise).catch(() => {})
 
     return () => {
-      controls?.stop()
+      cancelled = true
+      stopScanner?.()
+
+      // 시작 중인 비동기 작업이 끝난 뒤 정리
+      void scannerTask.finally(() => {
+        stopScanner?.()
+        finishCleanup?.()
+      })
     }
-  }, [missionId, mission, navigate])
+  }, [selectedMissionId, navigate])
 
   if (!mission) {
     return <Navigate to="/admin/mission" replace />
   }
+
+  // 남은 시간 표시
+  const minutes = Math.floor(remainingSeconds / 60)
+  const seconds = remainingSeconds % 60
+
+  const formattedTime = `${String(minutes).padStart(2, '0')}:${String(
+    seconds,
+  ).padStart(2, '0')}`
 
   return (
     <div className="admin-qr-page">
@@ -138,7 +207,7 @@ function AdminQrPage() {
         <button
           type="button"
           className="admin-qr-page__close"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/admin/mission')}
           aria-label="닫기"
         >
           ×
@@ -161,7 +230,6 @@ function AdminQrPage() {
             <video
               ref={videoRef}
               className="admin-qr-page__video"
-              autoPlay
               playsInline
               muted
             />
@@ -191,7 +259,7 @@ function AdminQrPage() {
           )}
 
           <span>◷</span>
-          <span>04:57</span>
+          <span>{formattedTime}</span>
         </div>
 
         <section className="admin-qr-page__mission">
