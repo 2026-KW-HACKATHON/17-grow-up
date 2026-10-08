@@ -32,4 +32,4 @@ jwt:
 
 app:
   invite:
-    base-url: ${INVITE_BASE_URL:http://localhost:5173/invite}
+    base-url: ${INVITE_BASE_URL:https://17-grow-up.vercel.app/invite}
