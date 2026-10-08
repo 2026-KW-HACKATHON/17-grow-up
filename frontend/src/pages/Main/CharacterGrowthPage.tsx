@@ -1,6 +1,12 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/BottomNav/BottomNav'
+import { getMyGrowth } from '../../api/growth'
+import type { GrowthData } from '../../api/growth'
 import './CharacterGrowthPage.css'
+
+type CharacterType =
+  'tumbler' | 'shopping-bag' | 'empty-plate' | 'no-disposable' | 'container'
 
 interface MissionStat {
   id: string
@@ -8,16 +14,6 @@ interface MissionStat {
   count: number
   percent: number
   image: string
-}
-type CharacterType =
-  'tumbler' | 'shopping-bag' | 'empty-plate' | 'no-disposable' | 'container'
-
-function getCharacterImage(type: CharacterType, level: number) {
-  if (level === 1) {
-    return '/init-character.svg'
-  }
-
-  return `/${type}-character${level}.svg`
 }
 
 const characterNames: Record<CharacterType, string> = {
@@ -28,43 +24,6 @@ const characterNames: Record<CharacterType, string> = {
   container: '다회용기',
 }
 
-const missionStats: MissionStat[] = [
-  {
-    id: 'tumbler',
-    name: '텀블러 사용',
-    count: 38,
-    percent: 38,
-    image: '/tumbler.svg',
-  },
-  {
-    id: 'shopping-bag',
-    name: '장바구니 사용',
-    count: 22,
-    percent: 22,
-    image: '/shopping-bag.svg',
-  },
-  {
-    id: 'container',
-    name: '다회용기 포장',
-    count: 18,
-    percent: 18,
-    image: '/container.svg',
-  },
-  {
-    id: 'empty-plate',
-    name: '음식 안 남기기',
-    count: 14,
-    percent: 14,
-    image: '/empty-plate.svg',
-  },
-  {
-    id: 'no-disposable',
-    name: '일회용품 받지 않기',
-    count: 8,
-    percent: 8,
-    image: '/no-disposable.svg',
-  },
-]
 const chartColors: Record<string, string> = {
   tumbler: '#36a85f',
   'shopping-bag': '#fdca61',
@@ -72,29 +31,134 @@ const chartColors: Record<string, string> = {
   'empty-plate': '#fb6a6a',
   'no-disposable': '#ab70f8',
 }
-const currentCarbon = 12800
-const currentLevelStart = 6900
-const nextLevelCarbon = 20700
+
+function getCharacterImage(type: CharacterType, level: number) {
+  if (level === 1) {
+    return '/init-character.svg'
+  }
+
+  return `/${type}-character${level}.svg`
+}
+
+// 백엔드 캐릭터 타입과 프론트 캐릭터 타입 연결
+// 실제 TREE_A ~ TREE_E 매핑은 백엔드와 확인 필요
+const characterTypeMap: Record<string, CharacterType> = {
+  TREE_A: 'tumbler',
+  TREE_B: 'shopping-bag',
+  TREE_C: 'empty-plate',
+  TREE_D: 'no-disposable',
+  TREE_E: 'container',
+}
+
+// 백엔드 미션 이름을 프론트 ID와 연결
+function getMissionId(name: string): string {
+  if (name.includes('텀블러')) return 'tumbler'
+  if (name.includes('장바구니')) return 'shopping-bag'
+  if (name.includes('다회용기')) return 'container'
+  if (name.includes('음식') || name.includes('잔반')) {
+    return 'empty-plate'
+  }
+  if (name.includes('일회용품')) return 'no-disposable'
+
+  return 'unknown'
+}
 
 function CharacterGrowthPage() {
   const navigate = useNavigate()
-  const currentCharacter: CharacterType = 'tumbler'
-  const currentLevel = 2
+
+  const [growth, setGrowth] = useState<GrowthData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    const fetchGrowth = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const data = await getMyGrowth()
+
+        if (active) {
+          setGrowth(data)
+        }
+      } catch (err) {
+        console.error('캐릭터 성장 조회 실패:', err)
+
+        if (active) {
+          setError('성장 정보를 불러오지 못했습니다.')
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchGrowth()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="growth-page">
+        <main className="growth-page__content">
+          <p>성장 정보를 불러오는 중...</p>
+        </main>
+        <BottomNav active="home" />
+      </div>
+    )
+  }
+
+  if (error || !growth) {
+    return (
+      <div className="growth-page">
+        <main className="growth-page__content">
+          <p>{error ?? '성장 정보가 없습니다.'}</p>
+          <button type="button" onClick={() => window.location.reload()}>
+            다시 시도
+          </button>
+        </main>
+        <BottomNav active="home" />
+      </div>
+    )
+  }
+
+  // 캐릭터 정보
+  const currentCharacter: CharacterType =
+    characterTypeMap[growth.characterType] ?? 'tumbler'
+
+  const currentLevel = growth.characterLevel
 
   const characterImage = getCharacterImage(currentCharacter, currentLevel)
+
   const characterName = characterNames[currentCharacter]
-  const progress =
-    ((currentCarbon - currentLevelStart) /
-      (nextLevelCarbon - currentLevelStart)) *
-    100
 
-  const remainingCarbon = nextLevelCarbon - currentCarbon
+  // 탄소 감축량 및 성장률
+  const currentCarbon = growth.totalCarbonG
+  const remainingCarbon = growth.remainingCarbonG
+  const progress = Math.min(100, Math.max(0, growth.progressPercent))
 
-  const totalCount = missionStats.reduce(
-    (sum, mission) => sum + mission.count,
-    0,
-  )
+  // 미션 통계 변환
+  const missionStats: MissionStat[] = growth.missionStats.map((mission) => {
+    const id = getMissionId(mission.missionName)
 
+    return {
+      id,
+      name: mission.missionName,
+      count: mission.count,
+      percent: mission.percentage,
+      image: `/${id}.svg`,
+    }
+  })
+
+  const totalCount = growth.totalMissionCount
+
+  // 원형 차트 계산
   let accumulatedPercent = 0
 
   const chartSegments = missionStats.map((mission) => {
@@ -112,14 +176,15 @@ function CharacterGrowthPage() {
     }
   })
 
-  const chartBackground = `conic-gradient(
-  ${chartSegments
-    .map(
-      (mission) =>
-        `${chartColors[mission.id]} ${mission.start}% ${mission.end}%`,
-    )
-    .join(', ')}
-)`
+  const chartBackground =
+    totalCount > 0
+      ? `conic-gradient(${chartSegments
+          .map(
+            (mission) =>
+              `${chartColors[mission.id] ?? '#aaaaaa'} ${mission.start}% ${mission.end}%`,
+          )
+          .join(', ')})`
+      : '#e5e5e5'
 
   return (
     <div className="growth-page">
@@ -153,7 +218,8 @@ function CharacterGrowthPage() {
           <h1>{characterName} 새싹 그루</h1>
 
           <p className="growth-page__carbon">
-            지금까지 <strong>12.8kgCO₂e</strong>를 줄였어요!
+            지금까지 <strong>{(currentCarbon / 1000).toFixed(1)}kgCO₂e</strong>
+            를 줄였어요!
           </p>
 
           <div className="growth-page__progress-section">
@@ -203,7 +269,9 @@ function CharacterGrowthPage() {
                 className="growth-page__chart"
                 style={{ background: chartBackground }}
               >
-                {chartSegments.map((mission) => {
+                {chartSegments.map((mission, index) => {
+                  if (mission.percent <= 0) return null
+
                   const angle = (mission.middle / 100) * 360
                   const radian = (angle * Math.PI) / 180
 
@@ -214,7 +282,7 @@ function CharacterGrowthPage() {
 
                   return (
                     <span
-                      key={mission.id}
+                      key={`${mission.id}-${index}`}
                       className="growth-page__chart-percent"
                       style={{
                         left: `${left}%`,
@@ -233,10 +301,16 @@ function CharacterGrowthPage() {
               </div>
 
               <div className="growth-page__legend">
-                {missionStats.map((mission) => (
-                  <div key={mission.id} className="growth-page__legend-item">
+                {missionStats.map((mission, index) => (
+                  <div
+                    key={`${mission.id}-${index}`}
+                    className="growth-page__legend-item"
+                  >
                     <span
                       className={`growth-page__dot growth-page__dot--${mission.id}`}
+                      style={{
+                        backgroundColor: chartColors[mission.id] ?? '#aaaaaa',
+                      }}
                     />
 
                     <div>
@@ -247,6 +321,10 @@ function CharacterGrowthPage() {
                     <em>{mission.percent}%</em>
                   </div>
                 ))}
+
+                {missionStats.length === 0 && (
+                  <p>아직 완료한 미션이 없습니다.</p>
+                )}
               </div>
             </div>
           </section>

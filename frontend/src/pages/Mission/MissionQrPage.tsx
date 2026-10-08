@@ -6,7 +6,6 @@ import BottomNav from '../../components/BottomNav/BottomNav'
 import MissionInfoCard from './components/MissionInfoCard'
 
 import { getMissionById, type Mission } from '../../api/missionApi'
-
 import { createUserQr, type QrTokenResponse } from '../../api/userQrApi'
 
 import './MissionQrPage.css'
@@ -56,6 +55,7 @@ const missionDisplayMap: Record<
   },
 }
 
+// QR 토큰 내부에서 만료 시간 확인
 function getQrTokenExpiresAt(qrToken: string): number | null {
   try {
     const payload = qrToken.split('.')[1]
@@ -70,18 +70,34 @@ function getQrTokenExpiresAt(qrToken: string): number | null {
       base64 += '='
     }
 
-    const decoded = JSON.parse(atob(base64))
+    const decoded: unknown = JSON.parse(atob(base64))
 
-    if (!decoded.exp) {
+    if (
+      typeof decoded !== 'object' ||
+      decoded === null ||
+      !('exp' in decoded) ||
+      typeof decoded.exp !== 'number'
+    ) {
       return null
     }
 
     return decoded.exp * 1000
-  } catch (error) {
-    console.error('QR 토큰 만료시간 확인 실패:', error)
-
+  } catch {
     return null
   }
+}
+
+// API expiresAt 우선, 없으면 JWT exp 사용
+function getQrExpiresAt(qrData: QrTokenResponse): number | null {
+  if (qrData.expiresAt) {
+    const expiresAt = new Date(qrData.expiresAt).getTime()
+
+    if (Number.isFinite(expiresAt)) {
+      return expiresAt
+    }
+  }
+
+  return getQrTokenExpiresAt(qrData.qrToken)
 }
 
 function MissionQrPage() {
@@ -97,8 +113,12 @@ function MissionQrPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [error, setError] = useState('')
+  const [refreshError, setRefreshError] = useState('')
 
+  // 1. 미션 조회 및 QR 발급
   useEffect(() => {
+    let cancelled = false
+
     const fetchQrPageData = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken')
@@ -108,50 +128,70 @@ function MissionQrPage() {
           return
         }
 
-        if (!missionId) {
+        const id = Number(missionId)
+
+        if (!missionId || !Number.isInteger(id) || id <= 0) {
           setError('미션 정보를 찾을 수 없습니다.')
           return
         }
 
-        const selectedMission = await getMissionById(
-          Number(missionId),
-          accessToken,
-        )
+        const selectedMission = await getMissionById(id, accessToken)
+
+        if (cancelled) return
+
+        // 이미 오늘 완료한 미션
+        if (selectedMission.completedToday) {
+          navigate('/mission', {
+            replace: true,
+          })
+          return
+        }
 
         const qr = await createUserQr(accessToken)
 
+        if (cancelled) return
+
         setMission(selectedMission)
         setQrData(qr)
-      } catch (error) {
-        console.error('QR 페이지 조회 실패:', error)
-
-        setError('QR 정보를 불러오지 못했습니다.')
+      } catch (err) {
+        if (!cancelled) {
+          console.error('QR 페이지 조회 실패:', err)
+          setError('QR 정보를 불러오지 못했습니다.')
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
     fetchQrPageData()
-  }, [missionId])
 
+    return () => {
+      cancelled = true
+    }
+  }, [missionId, navigate])
+
+  // 2. QR 만료 시간 관리
   useEffect(() => {
     if (!qrData) {
+      setRemainingSeconds(null)
       return
     }
 
-    const expiresAt = getQrTokenExpiresAt(qrData.qrToken)
+    const expiresAt = getQrExpiresAt(qrData)
 
-    if (!expiresAt) {
-      console.error('QR 토큰에 만료시간이 없습니다.')
+    // 만료 시간 정보가 없는 경우
+    // 임의로 만료 처리하지 않고 시간 표시만 생략
+    if (expiresAt === null) {
+      console.warn('QR 응답에 확인 가능한 만료 시간이 없습니다.')
 
-      setRemainingSeconds(0)
+      setRemainingSeconds(null)
       return
     }
 
     const updateRemainingTime = () => {
-      const now = Date.now()
-
-      const seconds = Math.max(0, Math.floor((expiresAt - now) / 1000))
+      const seconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))
 
       setRemainingSeconds(seconds)
     }
@@ -165,23 +205,81 @@ function MissionQrPage() {
     }
   }, [qrData])
 
+  // 3. 미션 인증 완료 여부 자동 확인
+  useEffect(() => {
+    if (!mission || !qrData || !missionId) return
+
+    let cancelled = false
+    let checking = false
+    let completed = false
+
+    const checkMissionCompletion = async () => {
+      if (checking || completed || cancelled) return
+
+      const accessToken = localStorage.getItem('accessToken')
+
+      if (!accessToken) return
+
+      checking = true
+
+      try {
+        const updatedMission = await getMissionById(
+          Number(missionId),
+          accessToken,
+        )
+
+        if (cancelled) return
+
+        if (updatedMission.completedToday) {
+          completed = true
+
+          navigate(`/mission/${missionId}/success`, {
+            replace: true,
+          })
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('미션 인증 완료 여부 확인 실패:', err)
+        }
+      } finally {
+        checking = false
+      }
+    }
+
+    // 최초 한 번 확인하고 이후 2초마다 확인
+    void checkMissionCompletion()
+
+    const interval = window.setInterval(checkMissionCompletion, 2000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [mission, qrData, missionId, navigate])
+
+  // 4. QR 재발급
   const handleRefreshQr = async () => {
+    if (isRefreshing) return
+
     try {
       const accessToken = localStorage.getItem('accessToken')
 
       if (!accessToken) {
-        setError('로그인이 필요합니다.')
+        setRefreshError('로그인이 필요합니다.')
         return
       }
 
       setIsRefreshing(true)
+      setRefreshError('')
       setRemainingSeconds(null)
 
       const qr = await createUserQr(accessToken)
 
       setQrData(qr)
-    } catch (error) {
-      console.error('QR 재발급 실패:', error)
+    } catch (err) {
+      console.error('QR 재발급 실패:', err)
+
+      setRefreshError('QR 재발급에 실패했습니다. 다시 시도해 주세요.')
     } finally {
       setIsRefreshing(false)
     }
@@ -285,6 +383,8 @@ function MissionQrPage() {
 
             <span>{remainingSeconds === null ? '--:--' : formattedTime}</span>
           </div>
+
+          {refreshError && <p role="alert">{refreshError}</p>}
         </section>
 
         <section className="mission-qr-page__mission">
@@ -294,14 +394,6 @@ function MissionQrPage() {
             backgroundColor={backgroundColor}
           />
         </section>
-
-        <button
-          type="button"
-          className="mission-qr-page__success-test"
-          onClick={() => navigate(`/mission/${mission.missionId}/success`)}
-        >
-          인증 완료 테스트
-        </button>
       </main>
 
       <BottomNav active="mission" />
