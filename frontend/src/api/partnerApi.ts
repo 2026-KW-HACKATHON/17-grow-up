@@ -50,6 +50,7 @@ export async function getPartnerMe(accessToken: string): Promise<PartnerMe> {
 export interface Partner {
   partnerId: number
   partnerName: string
+  category?: string | null
 }
 
 interface PartnerListResponse {

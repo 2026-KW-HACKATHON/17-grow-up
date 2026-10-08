@@ -361,3 +361,22 @@
 
   font-size: 9px;
 }
+.record-page__friend-avatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background-color: #f0f5f0;
+  overflow: hidden;
+}
+
+.record-page__friend-avatar-image {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 
 import BottomNav from '../../../components/BottomNav/BottomNav'
 
+import { getMissions, type Mission } from '../../../api/missionApi'
+
 import {
   getFriendRecords,
   getRecordCalendar,
@@ -18,10 +20,18 @@ import './RecordPage.css'
 
 type RecordTab = 'mine' | 'friend'
 
+// 한국 시간 기준 현재 연도와 월
 const now = new Date()
 
-const YEAR = now.getFullYear()
-const MONTH = now.getMonth() + 1
+const koreanDate = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: 'numeric',
+}).formatToParts(now)
+
+const YEAR = Number(koreanDate.find((part) => part.type === 'year')?.value)
+
+const MONTH = Number(koreanDate.find((part) => part.type === 'month')?.value)
 
 const missionImageMap: Record<string, string> = {
   '텀블러 사용하기': '/tumbler.svg',
@@ -29,6 +39,43 @@ const missionImageMap: Record<string, string> = {
   '포장 시 다회용기 사용하기': '/container.svg',
   '음식 안 남기기': '/empty-plate.svg',
   '일회용 수저·포크 사용 안 하기': '/no-disposable.svg',
+}
+
+// 한국 시간 기준 날짜 추출
+function getKoreanYearMonth(dateString: string) {
+  const date = new Date(dateString)
+
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(date)
+
+  return {
+    year: Number(parts.find((part) => part.type === 'year')?.value),
+    month: Number(parts.find((part) => part.type === 'month')?.value),
+  }
+}
+
+// 실천 완료 일시 표시
+function formatCompletedAt(completedAt: string) {
+  const date = new Date(completedAt)
+
+  if (Number.isNaN(date.getTime())) {
+    return '-'
+  }
+
+  return date.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function RecordPage() {
@@ -40,6 +87,8 @@ function RecordPage() {
 
   const [histories, setHistories] = useState<RecordHistory[]>([])
 
+  const [missions, setMissions] = useState<Mission[]>([])
+
   const [practiceDays, setPracticeDays] = useState<PracticeDay[]>([])
 
   const [friends, setFriends] = useState<FriendRecord[]>([])
@@ -47,7 +96,10 @@ function RecordPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // 1. 실천 기록 조회
   useEffect(() => {
+    let cancelled = false
+
     const fetchRecordData = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken')
@@ -57,57 +109,76 @@ function RecordPage() {
           return
         }
 
-        const [summaryData, historyData, calendarData, friendData] =
-          await Promise.all([
-            getRecordSummary(accessToken),
-            getRecordHistory(accessToken),
-            getRecordCalendar(accessToken, YEAR, MONTH),
-            getFriendRecords(accessToken),
-          ])
+        // 미션 조회 실패 시에도 기록 페이지는 유지
+        const [
+          summaryData,
+          historyData,
+          calendarData,
+          friendData,
+          missionData,
+        ] = await Promise.all([
+          getRecordSummary(accessToken),
+          getRecordHistory(accessToken),
+          getRecordCalendar(accessToken, YEAR, MONTH),
+          getFriendRecords(accessToken),
+
+          getMissions(accessToken).catch((error) => {
+            console.error('미션 보상 조회 실패:', error)
+            return [] as Mission[]
+          }),
+        ])
+
+        if (cancelled) return
 
         setSummary(summaryData)
+        setMissions(missionData)
+
+        // 이번 달에 완료한 기록만 필터링
         const monthlyHistories = historyData.filter((history) => {
-          const date = new Date(history.completedAt)
+          const date = getKoreanYearMonth(history.completedAt)
 
-          const year = Number(
-            new Intl.DateTimeFormat('en-US', {
-              timeZone: 'Asia/Seoul',
-              year: 'numeric',
-            }).format(date),
-          )
+          if (!date) return false
 
-          const month = Number(
-            new Intl.DateTimeFormat('en-US', {
-              timeZone: 'Asia/Seoul',
-              month: 'numeric',
-            }).format(date),
-          )
-
-          return year === YEAR && month === MONTH
+          return date.year === YEAR && date.month === MONTH
         })
 
         setHistories(monthlyHistories)
         setPracticeDays(calendarData.practiceDays)
         setFriends(friendData)
       } catch (error) {
-        console.error('실천 기록 조회 실패:', error)
+        if (!cancelled) {
+          console.error('실천 기록 조회 실패:', error)
 
-        setError('실천 기록을 불러오지 못했습니다.')
+          setError('실천 기록을 불러오지 못했습니다.')
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
-    fetchRecordData()
+    void fetchRecordData()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
+  // 2. 미션 ID별 포인트 매핑
+  const missionPointsMap = useMemo(() => {
+    return new Map<number, number>(
+      missions.map((mission) => [mission.missionId, mission.rewardPoints]),
+    )
+  }, [missions])
+
+  // 3. 달력 날짜 생성
   const calendarDays = useMemo(() => {
     const firstDay = new Date(YEAR, MONTH - 1, 1)
 
     const lastDate = new Date(YEAR, MONTH, 0).getDate()
 
-    // JS: 일요일 0 ~ 토요일 6
-    // 화면: 월요일부터 시작
+    // 월요일부터 시작
     const firstDayIndex = (firstDay.getDay() + 6) % 7
 
     const days: (number | null)[] = []
@@ -123,6 +194,7 @@ function RecordPage() {
     return days
   }, [])
 
+  // 4. 미션 완료한 날짜
   const completedDays = useMemo(() => {
     return practiceDays.map((practice) => {
       const [, , day] = practice.date.split('-').map(Number)
@@ -130,17 +202,6 @@ function RecordPage() {
       return day
     })
   }, [practiceDays])
-
-  const formatCompletedAt = (completedAt: string) => {
-    const date = new Date(completedAt)
-
-    return date.toLocaleString('ko-KR', {
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
 
   if (isLoading) {
     return (
@@ -171,6 +232,7 @@ function RecordPage() {
       <main className="record-page__content">
         <h1 className="record-page__title">실천 기록</h1>
 
+        {/* 탭 */}
         <div className="record-page__tabs">
           <button
             type="button"
@@ -195,6 +257,7 @@ function RecordPage() {
 
         {activeTab === 'mine' ? (
           <>
+            {/* 실천 달력 */}
             <section className="record-page__calendar">
               <h2 className="record-page__calendar-title">
                 {YEAR}년 {MONTH}월
@@ -237,6 +300,7 @@ function RecordPage() {
               </div>
             </section>
 
+            {/* 실천 통계 */}
             <section className="record-page__stats">
               <div className="record-page__stat">
                 <span>연속 실천</span>
@@ -251,8 +315,8 @@ function RecordPage() {
                 <span>최고 기록</span>
 
                 <strong>
-                  {summary?.longestStreak ?? 0}
-                  <span>일</span>
+                  {summary?.longestStreak ?? '-'}
+                  <span>{summary?.longestStreak != null ? '일' : ''}</span>
                 </strong>
               </div>
 
@@ -266,39 +330,48 @@ function RecordPage() {
               </div>
             </section>
 
+            {/* 이번 달 실천 내역 */}
             <section className="record-page__monthly">
               <h2>이번 달 실천 내역</h2>
 
               <div className="record-page__activity-list">
                 {histories.length > 0 ? (
-                  histories.map((activity, index) => (
-                    <div
-                      key={`${activity.missionId}-${activity.completedAt}-${index}`}
-                      className="record-page__activity-item"
-                    >
-                      <div className="record-page__activity-icon">
-                        <img
-                          src={
-                            missionImageMap[activity.missionName] ??
-                            '/tumbler.svg'
-                          }
-                          alt=""
-                        />
+                  histories.map((activity, index) => {
+                    const points = missionPointsMap.get(activity.missionId)
+
+                    return (
+                      <div
+                        key={`${activity.missionId}-${activity.completedAt}-${index}`}
+                        className="record-page__activity-item"
+                      >
+                        <div className="record-page__activity-icon">
+                          <img
+                            src={
+                              missionImageMap[activity.missionName] ??
+                              '/tumbler.svg'
+                            }
+                            alt=""
+                          />
+                        </div>
+
+                        <div className="record-page__activity-info">
+                          <strong>{activity.missionName}</strong>
+
+                          <span>탄소 감축 실천</span>
+                        </div>
+
+                        <div className="record-page__activity-point">
+                          <strong>
+                            {points !== undefined
+                              ? `+${points.toLocaleString()}P`
+                              : '포인트 정보 없음'}
+                          </strong>
+
+                          <span>{formatCompletedAt(activity.completedAt)}</span>
+                        </div>
                       </div>
-
-                      <div className="record-page__activity-info">
-                        <strong>{activity.missionName}</strong>
-
-                        <span>탄소 감축 실천</span>
-                      </div>
-
-                      <div className="record-page__activity-point">
-                        <strong>+{activity.carbonReductionG}g</strong>
-
-                        <span>{formatCompletedAt(activity.completedAt)}</span>
-                      </div>
-                    </div>
-                  ))
+                    )
+                  })
                 ) : (
                   <p className="record-page__empty">아직 실천 내역이 없어요.</p>
                 )}
@@ -307,6 +380,7 @@ function RecordPage() {
           </>
         ) : (
           <>
+            {/* 친구 기록 */}
             <section className="record-page__friend-section">
               <h2 className="record-page__friend-title">친구들의 초록 성장</h2>
 
@@ -325,8 +399,13 @@ function RecordPage() {
                         {index + 1}
                       </span>
 
-                      <div className="record-page__friend-avatar" />
-
+                      <div className="record-page__friend-avatar">
+                        <img
+                          src="/profile-character.svg"
+                          alt=""
+                          className="record-page__friend-avatar-image"
+                        />
+                      </div>
                       <strong className="record-page__friend-name">
                         {friend.nickname}
                       </strong>

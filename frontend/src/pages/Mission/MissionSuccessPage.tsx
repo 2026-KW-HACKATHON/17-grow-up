@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+
 import BottomNav from '../../components/BottomNav/BottomNav'
 import { getMissions, type Mission } from '../../api/missionApi'
+import { getRecordSummary } from '../../api/recordApi'
+
 import './MissionSuccessPage.css'
 
 function MissionSuccessPage() {
@@ -9,10 +12,14 @@ function MissionSuccessPage() {
   const navigate = useNavigate()
 
   const [mission, setMission] = useState<Mission | null>(null)
+  const [currentStreak, setCurrentStreak] = useState<number | null>(null)
+
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchMission = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken')
@@ -22,7 +29,18 @@ function MissionSuccessPage() {
           return
         }
 
-        const missions = await getMissions(accessToken)
+        // 미션 정보와 연속 실천일 조회
+        // 연속 실천일 조회가 실패해도 성공 페이지는 표시
+        const [missions, summary] = await Promise.all([
+          getMissions(accessToken),
+
+          getRecordSummary(accessToken).catch((error) => {
+            console.error('연속 실천일 조회 실패:', error)
+            return null
+          }),
+        ])
+
+        if (cancelled) return
 
         const selectedMission = missions.find(
           (item) => item.missionId === Number(missionId),
@@ -34,14 +52,27 @@ function MissionSuccessPage() {
         }
 
         setMission(selectedMission)
-      } catch {
-        setError('미션 정보를 불러오지 못했습니다.')
+
+        if (summary) {
+          setCurrentStreak(summary.currentStreak)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('미션 정보 조회 실패:', error)
+          setError('미션 정보를 불러오지 못했습니다.')
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
-    fetchMission()
+    void fetchMission()
+
+    return () => {
+      cancelled = true
+    }
   }, [missionId])
 
   if (isLoading) {
@@ -100,12 +131,19 @@ function MissionSuccessPage() {
           </div>
         </section>
 
+        {/* 연속 실천일 */}
         <section className="mission-success-page__streak">
           <span className="mission-success-page__fire">🔥</span>
 
           <div>
             <strong>
-              <em>5일</em> 연속 실천 중이에요!
+              {currentStreak !== null ? (
+                <>
+                  <em>{currentStreak}일</em> 연속 실천 중이에요!
+                </>
+              ) : (
+                '오늘도 실천을 완료했어요!'
+              )}
             </strong>
 
             <span>꾸준한 실천이 멋져요!</span>

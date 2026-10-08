@@ -202,3 +202,80 @@
 
   cursor: pointer;
 }
+
+/* 관리자 QR 인증 완료 모달 */
+
+.admin-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-success-modal {
+  width: 100%;
+  max-width: 350px;
+  min-height: 520px;
+
+  padding: 60px 24px 45px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: #ffffff;
+  border-radius: 28px;
+}
+
+.admin-success-modal__title {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.3;
+
+  color: #24572e;
+  text-align: center;
+}
+
+.admin-success-modal__character {
+  width: 280px;
+  height: 280px;
+
+  margin-top: 30px;
+
+  object-fit: contain;
+}
+
+.admin-success-modal__button {
+  width: 174px;
+  height: 48px;
+
+  margin-top: 34px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: #4e8455;
+  color: #ffffff;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.admin-success-modal__button:hover {
+  background: #406f47;
+}
