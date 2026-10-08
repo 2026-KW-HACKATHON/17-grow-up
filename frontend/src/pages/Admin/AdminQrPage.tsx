@@ -20,7 +20,7 @@ function AdminQrPage() {
   const mission = missions.find((item) => item.id === missionId)
 
   useEffect(() => {
-    if (!videoRef.current || !missionId) {
+    if (!videoRef.current || !missionId || !mission) {
       return
     }
 
@@ -59,7 +59,7 @@ function AdminQrPage() {
 
               const verification = await verifyMission(accessToken, {
                 qrToken,
-                missionId: Number(missionId),
+                missionId: mission.missionId,
               })
 
               console.log('미션 인증 성공:', verification)
@@ -98,6 +98,10 @@ function AdminQrPage() {
                     setVerificationError('미션 인증 권한이 없습니다.')
                     break
 
+                  case 'VALIDATION_ERROR':
+                    setVerificationError('미션 정보가 올바르지 않습니다.')
+                    break
+
                   default:
                     setVerificationError('미션 인증에 실패했습니다.')
                 }
@@ -122,10 +126,10 @@ function AdminQrPage() {
     return () => {
       controls?.stop()
     }
-  }, [missionId, navigate])
+  }, [missionId, mission, navigate])
 
   if (!mission) {
-    return <Navigate to="/main" replace />
+    return <Navigate to="/admin/mission" replace />
   }
 
   return (

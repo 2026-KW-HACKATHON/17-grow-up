@@ -250,22 +250,6 @@ function CharacterGrowthPage() {
               </div>
             </div>
           </section>
-
-          <section className="growth-page__recommend">
-            <div className="growth-page__recommend-text">
-              <span>지금처럼 실천하면</span>
-
-              <strong>
-                {characterName} 그루로 성장할 가능성이 가장 높아요!
-              </strong>
-
-              <p>{characterName} 미션을 가장 많이 실천하고 있어요.</p>
-            </div>
-
-            <div className="growth-page__recommend-image">
-              <img src="/tumbler.svg" alt="텀블러" />
-            </div>
-          </section>
         </section>
       </main>
 

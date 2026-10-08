@@ -1,44 +1,210 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../components/BottomNav/BottomNav'
-import { missions } from '../Mission/data/missionData'
+
+import { getHome, type HomeData } from '../../api/homeApi'
+
+import { getMissions, type Mission } from '../../api/missionApi'
+
 import './MainPage.css'
-interface Activity {
-  id: number
-  title: string
-  place: string
-  point: number
-  time: string
-  image: string
-}
 
-const weekdays = [
-  { label: '월', completed: true },
-  { label: '화', completed: true },
-  { label: '수', completed: true },
-  { label: '목', completed: true },
-  { label: '금', completed: true },
-  { label: '토', completed: false },
-  { label: '일', completed: false },
-]
+const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일']
 
-const activities: Activity[] = [
+const missionDisplayMap: Record<
+  string,
   {
-    id: 1,
+    title: string
+    category: string
+    image: string
+    backgroundColor: string
+  }
+> = {
+  '텀블러 사용하기': {
     title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
+    category: '카페',
     image: '/tumbler.svg',
+    backgroundColor: '#E9F4EC',
   },
-]
+
+  '장바구니 사용하기': {
+    title: '장바구니 사용하기',
+    category: '마트·편의점',
+    image: '/shopping-bag.svg',
+    backgroundColor: '#FFF5E0',
+  },
+
+  '포장 시 다회용기 사용하기': {
+    title: '포장 시 다회용기 사용하기',
+    category: '음식점',
+    image: '/container.svg',
+    backgroundColor: '#EDF3FC',
+  },
+
+  '음식 안 남기기': {
+    title: '음식 남기지 않기',
+    category: '음식점',
+    image: '/empty-plate.svg',
+    backgroundColor: '#FCE8E5',
+  },
+
+  '일회용 수저·포크 사용 안 하기': {
+    title: '일회용 수저·빨대 받지 않기',
+    category: '카페·음식점',
+    image: '/no-disposable.svg',
+    backgroundColor: '#DFE5FB',
+  },
+}
 
 function MainPage() {
   const navigate = useNavigate()
 
-  const randomMissions = useMemo(() => {
-    return [...missions].sort(() => Math.random() - 0.5).slice(0, 2)
+  const [homeData, setHomeData] = useState<HomeData | null>(null)
+
+  const [missionData, setMissionData] = useState<Mission[]>([])
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchMainData = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const [home, missions] = await Promise.all([
+          getHome(accessToken),
+          getMissions(accessToken),
+        ])
+
+        setHomeData(home)
+        setMissionData(missions)
+      } catch (error) {
+        console.error('홈 화면 조회 실패:', error)
+
+        setError('홈 정보를 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMainData()
   }, [])
+
+  const weekdays = useMemo(() => {
+    const practiceDates = new Set(homeData?.weeklyPracticeDays ?? [])
+
+    const today = new Date()
+
+    const currentDay = today.getDay()
+
+    // 일요일: 0
+    // 월요일부터 시작하도록 계산
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+
+    const monday = new Date(today)
+
+    monday.setHours(0, 0, 0, 0)
+    monday.setDate(today.getDate() + mondayOffset)
+
+    return weekdayLabels.map((label, index) => {
+      const date = new Date(monday)
+
+      date.setDate(monday.getDate() + index)
+
+      const year = date.getFullYear()
+
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+
+      const day = String(date.getDate()).padStart(2, '0')
+
+      const dateString = `${year}-${month}-${day}`
+
+      return {
+        label,
+        completed: practiceDates.has(dateString),
+      }
+    })
+  }, [homeData?.weeklyPracticeDays])
+
+  const todayMissions = useMemo(() => {
+    return homeData?.todayMissions.slice(0, 2) ?? []
+  }, [homeData?.todayMissions])
+
+  const weeklyPracticeCount = homeData?.weeklyPracticeDays.length ?? 0
+
+  const formatCarbon = (carbonG: number) => {
+    if (carbonG >= 1000) {
+      const kg = carbonG / 1000
+
+      return {
+        value: Number(kg.toFixed(1)),
+        unit: 'kg CO₂e',
+      }
+    }
+
+    return {
+      value: carbonG,
+      unit: 'g CO₂e',
+    }
+  }
+
+  const formatCompletedAt = (completedAt: string) => {
+    const date = new Date(completedAt)
+
+    const today = new Date()
+
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+
+    const time = date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+    if (isToday) {
+      return `오늘 ${time}`
+    }
+
+    return date.toLocaleString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const carbon = formatCarbon(homeData?.totalCarbonG ?? 0)
+
+  if (isLoading) {
+    return (
+      <div className="main-page">
+        <main className="main-page__content">
+          <p>홈 정보를 불러오는 중...</p>
+        </main>
+
+        <BottomNav active="home" />
+      </div>
+    )
+  }
+
+  if (error || !homeData) {
+    return (
+      <div className="main-page">
+        <main className="main-page__content">
+          <p>{error || '홈 정보를 불러오지 못했습니다.'}</p>
+        </main>
+
+        <BottomNav active="home" />
+      </div>
+    )
+  }
 
   return (
     <div className="main-page">
@@ -87,7 +253,9 @@ function MainPage() {
           />
 
           <div className="main-page__growth-text">
-            <span className="main-page__level">Lv. 2</span>
+            <span className="main-page__level">
+              Lv. {homeData.character.characterLevel}
+            </span>
 
             <h1>
               조금씩, 더 푸르게
@@ -102,11 +270,18 @@ function MainPage() {
                 </div>
 
                 <div className="main-page__progress-bar">
-                  <div className="main-page__progress-value" />
+                  <div
+                    className="main-page__progress-value"
+                    style={{
+                      width: '0%',
+                    }}
+                  />
                 </div>
               </div>
 
-              <span>다음 성장까지 120P</span>
+              <span>
+                누적 탄소 감축량 {homeData.totalCarbonG.toLocaleString()}g
+              </span>
             </div>
           </div>
         </section>
@@ -121,7 +296,8 @@ function MainPage() {
 
             <div>
               <span>보유 포인트</span>
-              <strong>1,230 P</strong>
+
+              <strong>{homeData.availablePoints.toLocaleString()} P</strong>
             </div>
 
             <span className="main-page__chevron">›</span>
@@ -136,8 +312,9 @@ function MainPage() {
 
             <div>
               <span>누적 탄소 감축량</span>
+
               <strong>
-                12.8 <small>kg CO₂e</small>
+                {carbon.value} <small>{carbon.unit}</small>
               </strong>
             </div>
 
@@ -151,12 +328,12 @@ function MainPage() {
               <span className="main-page__fire">🔥</span>
 
               <strong>
-                <em>5일</em> 연속 실천 중이에요!
+                <em>{homeData.currentStreak}일</em> 연속 실천 중이에요!
               </strong>
             </div>
 
             <button type="button" onClick={() => navigate('/record')}>
-              이번 주 5일 실천했어요
+              이번 주 {weeklyPracticeCount}일 실천했어요
               <span>›</span>
             </button>
           </div>
@@ -189,42 +366,57 @@ function MainPage() {
           </div>
 
           <div className="main-page__mission-list">
-            {randomMissions.map((mission, index) => (
-              <button
-                key={mission.id}
-                type="button"
-                className="main-page__mission-card"
-                style={{
-                  backgroundColor: mission.backgroundColor,
-                }}
-                onClick={() => navigate(`/mission/${mission.id}`)}
-              >
-                {index === 0 && (
-                  <span className="main-page__recommend">추천</span>
-                )}
+            {todayMissions.length > 0 ? (
+              todayMissions.map((mission, index) => {
+                const apiMission = missionData.find(
+                  (item) => item.missionId === mission.missionId,
+                )
 
-                <div className="main-page__mission-image">
-                  <div className="main-page__mission-shadow" />
-                  <img src={mission.image} alt="" />
-                </div>
+                const display = missionDisplayMap[mission.name]
 
-                <div className="main-page__mission-text">
-                  <div className="main-page__mission-title-row">
-                    <strong>{mission.title}</strong>
+                return (
+                  <button
+                    key={mission.missionId}
+                    type="button"
+                    className="main-page__mission-card"
+                    style={{
+                      backgroundColor: display?.backgroundColor ?? '#E9F4EC',
+                    }}
+                    onClick={() => navigate(`/mission/${mission.missionId}`)}
+                  >
+                    {index === 0 && (
+                      <span className="main-page__recommend">추천</span>
+                    )}
 
-                    <span className="main-page__mission-point">
-                      <img src="/point-coin.svg" alt="" />
-                      {mission.point}
-                    </span>
-                  </div>
+                    <div className="main-page__mission-image">
+                      <div className="main-page__mission-shadow" />
 
-                  <div className="main-page__mission-bottom-row">
-                    <span>{mission.category}</span>
-                    <span className="main-page__mission-arrow">›</span>
-                  </div>
-                </div>
-              </button>
-            ))}
+                      <img src={display?.image ?? '/tumbler.svg'} alt="" />
+                    </div>
+
+                    <div className="main-page__mission-text">
+                      <div className="main-page__mission-title-row">
+                        <strong>{display?.title ?? mission.name}</strong>
+
+                        <span className="main-page__mission-point">
+                          <img src="/point-coin.svg" alt="" />
+
+                          {apiMission?.rewardPoints ?? 0}
+                        </span>
+                      </div>
+
+                      <div className="main-page__mission-bottom-row">
+                        <span>{display?.category ?? mission.category}</span>
+
+                        <span className="main-page__mission-arrow">›</span>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })
+            ) : (
+              <p>오늘 수행 가능한 미션이 없어요.</p>
+            )}
           </div>
         </section>
 
@@ -239,28 +431,38 @@ function MainPage() {
           </div>
 
           <div className="main-page__activity-list">
-            {activities.map((activity) => (
-              <button
-                key={activity.id}
-                type="button"
-                className="main-page__activity-item"
-                onClick={() => navigate('/record')}
-              >
-                <div className="main-page__activity-icon">
-                  <img src={activity.image} alt="" />
-                </div>
+            {homeData.recentActivities.length > 0 ? (
+              homeData.recentActivities.map((activity, index) => {
+                const display = missionDisplayMap[activity.missionName]
 
-                <div className="main-page__activity-info">
-                  <strong>{activity.title}</strong>
-                  <span>{activity.place}</span>
-                </div>
+                return (
+                  <button
+                    key={`${activity.missionId}-${activity.completedAt}-${index}`}
+                    type="button"
+                    className="main-page__activity-item"
+                    onClick={() => navigate('/record')}
+                  >
+                    <div className="main-page__activity-icon">
+                      <img src={display?.image ?? '/tumbler.svg'} alt="" />
+                    </div>
 
-                <div className="main-page__activity-point">
-                  <strong>+{activity.point}P</strong>
-                  <span>{activity.time}</span>
-                </div>
-              </button>
-            ))}
+                    <div className="main-page__activity-info">
+                      <strong>{display?.title ?? activity.missionName}</strong>
+
+                      <span>탄소 감축 실천</span>
+                    </div>
+
+                    <div className="main-page__activity-point">
+                      <strong>+{activity.carbonReductionG}g</strong>
+
+                      <span>{formatCompletedAt(activity.completedAt)}</span>
+                    </div>
+                  </button>
+                )
+              })
+            ) : (
+              <p>아직 최근 활동이 없어요.</p>
+            )}
           </div>
         </section>
       </main>

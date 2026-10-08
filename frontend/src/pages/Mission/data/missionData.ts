@@ -1,5 +1,6 @@
 export interface MissionData {
   id: string
+  missionId: number
   title: string
   category: string
   point: number
@@ -13,6 +14,7 @@ export interface MissionData {
 export const missions: MissionData[] = [
   {
     id: 'tumbler',
+    missionId: 1,
     title: '텀블러 사용하기',
     category: '카페',
     point: 500,
@@ -24,6 +26,7 @@ export const missions: MissionData[] = [
   },
   {
     id: 'shopping-bag',
+    missionId: 2,
     title: '장바구니 사용하기',
     category: '마트·편의점',
     point: 200,
@@ -35,6 +38,7 @@ export const missions: MissionData[] = [
   },
   {
     id: 'container',
+    missionId: 3,
     title: '포장 시 다회용기 사용하기',
     category: '음식점',
     point: 500,
@@ -46,6 +50,7 @@ export const missions: MissionData[] = [
   },
   {
     id: 'empty-plate',
+    missionId: 4,
     title: '음식 남기지 않기',
     category: '음식점',
     point: 100,
@@ -57,6 +62,7 @@ export const missions: MissionData[] = [
   },
   {
     id: 'no-disposable',
+    missionId: 5,
     title: '일회용 수저·빨대 받지 않기',
     category: '음식점·카페',
     point: 300,
