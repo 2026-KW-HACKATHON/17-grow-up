@@ -13,6 +13,14 @@ import PointHistoryItem from '../components/PointHistoryItem'
 import PointTabs, { type PointTabType } from '../components/PointTabs'
 import './PointPage.css'
 
+const missionImageMap: Record<string, string> = {
+  '텀블러 사용하기': '/tumbler.svg',
+  '장바구니 사용하기': '/shopping-bag.svg',
+  '포장 시 다회용기 사용하기': '/container.svg',
+  '음식 안 남기기': '/empty-plate.svg',
+  '일회용 수저·포크 사용 안 하기': '/no-disposable.svg',
+}
+
 function formatHistoryTime(earnedAt: string) {
   const date = new Date(earnedAt)
 
@@ -120,7 +128,7 @@ function PointPage() {
               pointHistories.map((history, index) => (
                 <PointHistoryItem
                   key={`${history.missionId}-${history.earnedAt}-${index}`}
-                  icon="/tumbler.svg"
+                  icon={missionImageMap[history.missionName] ?? '/tumbler.svg'}
                   title={history.missionName}
                   place={history.partnerName}
                   point={history.earnedPoints}
