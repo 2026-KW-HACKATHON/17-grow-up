@@ -57,12 +57,8 @@ public final class CharacterGrowthPolicy {
                 currentLevelMinCarbonG,
                 nextLevelCarbonG,
                 Math.max(nextLevelCarbonG - totalCarbonG, 0L),
-                roundToTwoDecimalPlaces(clampedProgress)
+                clampedProgress
         );
-    }
-
-    private static double roundToTwoDecimalPlaces(double value) {
-        return Math.round(value * 100.0) / 100.0;
     }
 
     public record Growth(

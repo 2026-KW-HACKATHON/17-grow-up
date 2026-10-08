@@ -1,6 +1,7 @@
 package com.growup.backend.user.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ class CharacterGrowthPolicyTest {
         assertThat(growth.currentLevelMinCarbonG()).isEqualTo(1_610L);
         assertThat(growth.nextLevelCarbonG()).isEqualTo(6_900L);
         assertThat(growth.remainingCarbonG()).isEqualTo(3_000L);
-        assertThat(growth.progressPercent()).isEqualTo(43.29);
+        assertThat(growth.progressPercent()).isCloseTo(43.28922495274102, within(1.0e-12));
     }
 
     @Test

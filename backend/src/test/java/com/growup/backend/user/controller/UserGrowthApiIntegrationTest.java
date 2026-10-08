@@ -3,6 +3,7 @@ package com.growup.backend.user.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.closeTo;
 
 import com.growup.backend.global.security.JwtTokenProvider;
 import com.growup.backend.global.security.Role;
@@ -92,7 +93,8 @@ class UserGrowthApiIntegrationTest {
                 .andExpect(jsonPath("$.data.currentLevelMinCarbonG").value(1_610))
                 .andExpect(jsonPath("$.data.nextLevelCarbonG").value(6_900))
                 .andExpect(jsonPath("$.data.remainingCarbonG").value(3_000))
-                .andExpect(jsonPath("$.data.progressPercent").value(43.29))
+                .andExpect(jsonPath("$.data.progressPercent")
+                        .value(closeTo(43.28922495274102, 1.0e-12)))
                 .andExpect(jsonPath("$.data.totalMissionCount").value(3))
                 .andExpect(jsonPath("$.data.missionStats.length()").value(2))
                 .andExpect(jsonPath("$.data.missionStats[0].missionId")

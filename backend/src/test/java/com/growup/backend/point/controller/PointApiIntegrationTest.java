@@ -290,6 +290,42 @@ class PointApiIntegrationTest {
     }
 
     @Test
+    void monthlyEarnedPointsUseCompletedDateInsteadOfCompletedAt() throws Exception {
+        User user = saveUser("growup", "ABCDEFGH", 0L);
+        Mission previousMonthMission = saveMission("지난달 미션", 300L);
+        Mission currentMonthMission = saveMission("이번달 미션", 500L);
+        YearMonth currentMonth = YearMonth.now(KST_ZONE_ID);
+
+        MissionCompletion previousMonthCompletion = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(
+                        user,
+                        previousMonthMission,
+                        currentMonth.minusMonths(1).atEndOfMonth()
+                )
+        );
+        MissionCompletion currentMonthCompletion = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(
+                        user,
+                        currentMonthMission,
+                        currentMonth.atDay(1)
+                )
+        );
+        setCompletedAt(
+                previousMonthCompletion,
+                currentMonth.atDay(1).atTime(12, 0)
+        );
+        setCompletedAt(
+                currentMonthCompletion,
+                currentMonth.minusMonths(1).atEndOfMonth().atTime(12, 0)
+        );
+
+        mockMvc.perform(get("/api/v1/points/history")
+                        .header(HttpHeaders.AUTHORIZATION, userBearerToken(user.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.monthlyEarnedPoints").value(500));
+    }
+
+    @Test
     void unauthenticatedRequestsReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/points/conversions"))
                 .andExpect(status().isUnauthorized())
