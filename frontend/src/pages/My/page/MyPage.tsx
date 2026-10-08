@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -35,6 +36,10 @@ function MyPage() {
 
   const handleRecordClick = () => {
     navigate('/record')
+  }
+
+  const handleFriendClick = () => {
+    navigate('/record/friend-add')
   }
 
   const handleProfileEditClick = () => {
@@ -99,6 +104,7 @@ function MyPage() {
             <MyMenuItem
               icon="/friend.svg"
               label="친구 관리"
+              onClick={handleFriendClick}
             />
 
             <MyMenuItem
