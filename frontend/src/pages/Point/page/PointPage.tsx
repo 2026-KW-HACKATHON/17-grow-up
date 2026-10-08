@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -147,7 +146,7 @@ function PointPage() {
                 icon="/point-coin.svg"
                 title="서울페이 전환"
                 place={`${conversion.seoulPayAmount.toLocaleString()}원 전환`}
-                point={-conversion.convertedPoints}
+                point={conversion.convertedPoints}
                 time={formatConversionTime(conversion.createdAt)}
               />
             ))
