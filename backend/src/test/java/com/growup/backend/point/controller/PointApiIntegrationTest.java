@@ -241,7 +241,7 @@ class PointApiIntegrationTest {
                 )
         );
         MissionCompletion legacyCompletion = missionCompletionRepository.saveAndFlush(
-                MissionCompletion.create(currentUser, bag, today.minusDays(1))
+                MissionCompletion.create(currentUser, bag, currentMonth.atDay(1))
         );
         MissionCompletion newest = missionCompletionRepository.saveAndFlush(
                 MissionCompletion.create(currentUser, tumbler, partner, today)
