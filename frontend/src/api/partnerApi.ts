@@ -46,3 +46,40 @@ export async function getPartnerMe(accessToken: string): Promise<PartnerMe> {
 
   return result.data
 }
+
+export interface Partner {
+  partnerId: number
+  partnerName: string
+}
+
+interface PartnerListResponse {
+  success: boolean
+  data?: {
+    partners: Partner[]
+  }
+  error?: {
+    code: string
+    message: string
+  }
+}
+
+export async function getPartners(accessToken: string): Promise<Partner[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/partners`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const result: PartnerListResponse = await response.json()
+
+  if (!response.ok || !result.success) {
+    console.error('제휴처 목록 조회 실패:', response.status, result.error)
+
+    throw new Error(result.error?.code ?? 'PARTNER_LIST_FAILED')
+  }
+
+  console.log('제휴처 목록 조회 성공:', response.status, result.data)
+
+  return result.data?.partners ?? []
+}
