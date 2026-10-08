@@ -263,144 +263,31 @@ function AdminMissionDetailPage() {
         </section>
       </main>
 
-      {/* QR 인증 성공 팝업 */}
+      {/* QR 인증 성공 모달 */}
       {verificationResult && (
-        <div
-          role="presentation"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 2000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            padding: '20px',
-            boxSizing: 'border-box',
-          }}
-        >
+        <div className="admin-success-overlay">
           <div
+            className="admin-success-modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="verification-success-title"
-            style={{
-              width: '100%',
-              maxWidth: '340px',
-              padding: '32px 24px',
-              borderRadius: '20px',
-              backgroundColor: '#ffffff',
-              textAlign: 'center',
-              boxSizing: 'border-box',
-            }}
+            aria-labelledby="admin-success-title"
           >
-            <div
-              aria-hidden="true"
-              style={{
-                fontSize: '42px',
-                marginBottom: '12px',
-              }}
-            >
-              ✅
-            </div>
-
-            <h2
-              id="verification-success-title"
-              style={{
-                margin: '0 0 8px',
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#111111',
-              }}
-            >
-              미션 인증 완료!
+            <h2 id="admin-success-title" className="admin-success-modal__title">
+              인증 완료!
             </h2>
 
-            <p
-              style={{
-                margin: '0 0 24px',
-                fontSize: '14px',
-                color: '#777777',
-                lineHeight: 1.5,
-              }}
-            >
-              {verificationResult.missionName}
-              <br />
-              정상적으로 인증되었습니다.
-            </p>
-
-            <div
-              style={{
-                padding: '18px',
-                borderRadius: '12px',
-                backgroundColor: '#F4F8F5',
-                marginBottom: '24px',
-              }}
-            >
-              <p
-                style={{
-                  margin: '0 0 12px',
-                  fontSize: '14px',
-                  color: '#555555',
-                }}
-              >
-                지급 포인트
-                <strong
-                  style={{
-                    display: 'block',
-                    marginTop: '4px',
-                    fontSize: '22px',
-                    color: '#36A85F',
-                  }}
-                >
-                  +{verificationResult.pointsAwarded.toLocaleString()}P
-                </strong>
-              </p>
-
-              <div
-                style={{
-                  height: '1px',
-                  backgroundColor: '#E0E8E2',
-                  marginBottom: '12px',
-                }}
-              />
-
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: '#555555',
-                }}
-              >
-                탄소 감축량
-                <strong
-                  style={{
-                    display: 'block',
-                    marginTop: '4px',
-                    fontSize: '20px',
-                    color: '#111111',
-                  }}
-                >
-                  +{verificationResult.carbonAwardedG.toLocaleString()}g CO₂e
-                </strong>
-              </p>
-            </div>
+            <img
+              className="admin-success-modal__character"
+              src="/admin-success-charater.svg"
+              alt="인증 완료를 축하하는 그루 캐릭터"
+            />
 
             <button
               type="button"
+              className="admin-success-modal__button"
               onClick={handleClosePopup}
-              style={{
-                width: '100%',
-                height: '48px',
-                border: 'none',
-                borderRadius: '12px',
-                backgroundColor: '#36A85F',
-                color: '#ffffff',
-                fontSize: '16px',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
             >
-              확인
+              목록으로
             </button>
           </div>
         </div>
