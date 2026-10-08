@@ -79,6 +79,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_active_at")
+    private LocalDateTime lastActiveAt;
+
     public static User create(
             String loginId,
             String passwordHash,
@@ -110,6 +113,10 @@ public class User {
         this.passwordHash = encodedPassword;
     }
 
+    public void updateLastActiveAt() {
+        this.lastActiveAt = LocalDateTime.now();
+    }
+
     public void completeMission(
             long carbonReductionG,
             long rewardPoints,
@@ -119,9 +126,11 @@ public class User {
                 completedDate,
                 "completedDate는 필수입니다."
         );
+
         if (carbonReductionG < 0) {
             throw new IllegalArgumentException("carbonReductionG는 0 이상이어야 합니다.");
         }
+
         if (rewardPoints < 0) {
             throw new IllegalArgumentException("rewardPoints는 0 이상이어야 합니다.");
         }
@@ -139,6 +148,7 @@ public class User {
         }
 
         longestStreak = Math.max(longestStreak, currentStreak);
+
         if (lastPracticeDate == null || completionDate.isAfter(lastPracticeDate)) {
             lastPracticeDate = completionDate;
         }
@@ -148,6 +158,7 @@ public class User {
         if (points < SEOUL_PAY_POINT_UNIT || points % SEOUL_PAY_POINT_UNIT != 0) {
             throw new IllegalArgumentException("포인트는 10,000P 단위여야 합니다.");
         }
+
         if (availablePoints < points) {
             throw new IllegalStateException("서울페이로 전환할 포인트가 부족합니다.");
         }
