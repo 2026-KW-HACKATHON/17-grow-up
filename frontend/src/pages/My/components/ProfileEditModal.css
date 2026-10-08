@@ -7,14 +7,18 @@
   align-items: center;
   justify-content: center;
 
+  padding: 20px;
+
   background: rgba(0, 0, 0, 0.35);
+
+  box-sizing: border-box;
 }
 
 .profile-edit-modal {
-  width: 352px;
-  min-height: 520px;
+  width: 100%;
+  max-width: 352px;
 
-  padding: 48px 44px 46px;
+  padding: 40px 32px 32px;
 
   background: #ffffff;
   border-radius: 20px;
@@ -23,34 +27,35 @@
 }
 
 .profile-edit-modal__title {
-  margin: 0;
+  margin: 0 0 36px;
 
   font-family: Pretendard, sans-serif;
-  font-size: 29px;
+  font-size: 28px;
   font-weight: 700;
-  line-height: 100%;
+  line-height: 1.3;
   letter-spacing: -0.02em;
 
   color: #000000;
 }
 
+/* 프로필 이미지 영역 */
 .profile-edit-modal__section {
-  margin-top: 43px;
+  margin-top: 0;
 }
 
 .profile-edit-modal__label {
   margin: 0;
 
   font-family: Pretendard, sans-serif;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 100%;
+  line-height: 1.4;
 
   color: #000000;
 }
 
 .profile-edit-modal__photo-row {
-  margin-top: 18px;
+  margin-top: 16px;
 
   display: flex;
   align-items: center;
@@ -58,25 +63,26 @@
 }
 
 .profile-edit-modal__character {
-  width: 86px;
-  height: 86px;
+  width: 80px;
+  height: 80px;
 
   display: block;
   object-fit: contain;
 }
 
+/* 공통 변경 버튼 */
 .profile-edit-modal__change-button {
-  min-width: 84px;
-  height: 35px;
+  min-width: 100px;
+  height: 38px;
 
-  padding: 0 13px;
+  padding: 0 16px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   border: 1px solid #298249;
-  border-radius: 60px;
+  border-radius: 999px;
 
   background: #ffffff;
 
@@ -84,40 +90,46 @@
   font-size: 15px;
   font-weight: 500;
 
-  color: #000000;
+  color: #111111;
 
   cursor: pointer;
 
   box-sizing: border-box;
 }
 
+/* 닉네임 */
 .profile-edit-modal__nickname-section {
-  margin-top: 43px;
+  margin-top: 32px;
 }
 
 .profile-edit-modal__nickname-row {
-  min-height: 35px;
-
-  margin-top: 13px;
+  margin-top: 14px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  gap: 16px;
 }
 
 .profile-edit-modal__nickname {
+  flex: 1;
+
   font-family: Pretendard, sans-serif;
   font-size: 16px;
   font-weight: 400;
 
   color: #333333;
+
+  word-break: break-all;
 }
 
 .profile-edit-modal__nickname-input {
-  width: 115px;
-  height: 32px;
+  flex: 1;
+  min-width: 0;
+  height: 36px;
 
-  padding: 0 6px;
+  padding: 0 4px;
 
   border: none;
   border-bottom: 1px solid #298249;
@@ -132,20 +144,20 @@
   box-sizing: border-box;
 }
 
+/* 버튼 */
 .profile-edit-modal__actions {
-  margin-top: 58px;
+  margin-top: 40px;
 
   display: flex;
   flex-direction: column;
-  align-items: center;
 
   gap: 10px;
 }
 
 .profile-edit-modal__save,
 .profile-edit-modal__cancel {
-  width: 158px;
-  height: 44px;
+  width: 100%;
+  height: 48px;
 
   padding: 0;
 

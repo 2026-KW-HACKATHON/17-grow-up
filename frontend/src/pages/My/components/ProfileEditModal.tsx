@@ -72,25 +72,6 @@ function ProfileEditModal({
       <div className="profile-edit-modal">
         <h2 className="profile-edit-modal__title">프로필 수정</h2>
 
-        <section className="profile-edit-modal__section">
-          <h3 className="profile-edit-modal__label">프로필 사진</h3>
-
-          <div className="profile-edit-modal__photo-row">
-            <img
-              className="profile-edit-modal__character"
-              src="/profile-character.svg"
-              alt="프로필 캐릭터"
-            />
-
-            <button
-              type="button"
-              className="profile-edit-modal__change-button"
-            >
-              사진 변경
-            </button>
-          </div>
-        </section>
-
         <section className="profile-edit-modal__nickname-section">
           <h3 className="profile-edit-modal__label">닉네임</h3>
 
@@ -104,9 +85,7 @@ function ProfileEditModal({
                 autoFocus
               />
             ) : (
-              <span className="profile-edit-modal__nickname">
-                {nickname}
-              </span>
+              <span className="profile-edit-modal__nickname">{nickname}</span>
             )}
 
             <button
