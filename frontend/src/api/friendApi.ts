@@ -9,7 +9,8 @@ export interface Friend {
   friendId: number
   nickname: string
   characterType: string
-  characterLevel: number
+  currentStreak: number
+  lastActiveAt: string | null
 }
 
 export interface AddFriendResponse {
@@ -48,6 +49,7 @@ interface DeleteFriendResponse {
   error?: ApiError
 }
 
+// 친구 초대 링크 조회
 export async function getInviteInfo(accessToken: string): Promise<InviteInfo> {
   const response = await fetch(`${API_BASE_URL}/api/v1/friends/invite`, {
     method: 'GET',
@@ -65,6 +67,7 @@ export async function getInviteInfo(accessToken: string): Promise<InviteInfo> {
   return result.data
 }
 
+// 친구 목록 조회
 export async function getFriends(accessToken: string): Promise<Friend[]> {
   const response = await fetch(`${API_BASE_URL}/api/v1/friends`, {
     method: 'GET',
@@ -75,13 +78,14 @@ export async function getFriends(accessToken: string): Promise<Friend[]> {
 
   const result: FriendListResponse = await response.json()
 
-  if (!response.ok || !result.success) {
+  if (!response.ok || !result.success || !result.data) {
     throw new Error(result.error?.code ?? 'FRIEND_LIST_FAILED')
   }
 
-  return result.data?.friends ?? []
+  return result.data.friends
 }
 
+// 친구 추가
 export async function addFriend(
   accessToken: string,
   inviteCode: string,
@@ -106,6 +110,7 @@ export async function addFriend(
   return result.data
 }
 
+// 친구 삭제
 export async function deleteFriend(
   accessToken: string,
   friendId: number,

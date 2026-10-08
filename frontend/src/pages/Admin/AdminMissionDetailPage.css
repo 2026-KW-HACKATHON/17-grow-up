@@ -11,10 +11,96 @@
 
 .admin-mission-page__content {
   padding: 24px 24px 40px;
-
   box-sizing: border-box;
 }
 
+/* 관리자 페이지 제목 */
+.admin-mission-page__intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-top: 0;
+}
+
+.admin-mission-page__intro-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-mission-page__intro h1 {
+  margin: 0;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+
+  color: #111111;
+}
+
+/* 제휴처 및 직원 정보 */
+.admin-mission-page__partner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-top: 12px;
+}
+
+.admin-mission-page__partner-info strong {
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  color: #4d8b59;
+}
+
+.admin-mission-page__partner-info span {
+  font-family: Pretendard, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+
+  color: #999999;
+}
+
+/* 로그아웃 */
+.admin-mission-page__logout {
+  flex-shrink: 0;
+
+  margin-top: 4px;
+  padding: 0;
+
+  width: auto;
+  height: auto;
+
+  border: none;
+  background: transparent;
+
+  color: #111111;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.admin-mission-page__logout:hover {
+  text-decoration: underline;
+}
+
+.admin-mission-page__logout:focus-visible {
+  outline: 2px solid #4d8b59;
+  outline-offset: 4px;
+}
+
+/* 기존 상세 페이지 스타일 유지 */
 .admin-mission-page__back {
   width: 30px;
   height: 30px;
@@ -51,22 +137,11 @@
   object-fit: contain;
 }
 
-.admin-mission-page__intro {
-  margin-top: 24px;
-}
-
 .admin-mission-page__category {
   color: #4d8b59;
 
   font-size: 12px;
   font-weight: 700;
-}
-
-.admin-mission-page__intro h1 {
-  margin: 6px 0 8px;
-
-  font-size: 22px;
-  font-weight: 800;
 }
 
 .admin-mission-page__intro p {
