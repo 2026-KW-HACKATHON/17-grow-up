@@ -347,6 +347,20 @@ GrowUp은 현재 월계1동을 대상으로 한 MVP에서 시작합니다.
 
 ---
 
+## 🚀 Deployment
+
+### Frontend
+- Vercel
+- https://17-grow-up.vercel.app
+
+### Backend
+- Railway
+- https://17-grow-up-production.up.railway.app
+
+### API Docs
+- Swagger
+- https://17-grow-up-production.up.railway.app/swagger-ui/index.html
+
 ## 📖 Swagger
 
 백엔드를 로컬에서 실행한 뒤 아래 주소에서 API 명세를 확인할 수 있습니다.
