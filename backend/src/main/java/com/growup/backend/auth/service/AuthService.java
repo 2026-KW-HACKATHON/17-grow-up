@@ -1,3 +1,4 @@
+
 package com.growup.backend.auth.service;
 
 import com.growup.backend.auth.dto.LoginRequest;
@@ -59,6 +60,7 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByLoginId(request.loginId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_LOGIN));
@@ -66,6 +68,8 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.INVALID_LOGIN);
         }
+
+        user.updateLastActiveAt();
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), Role.USER);
         return LoginResponse.bearer(
