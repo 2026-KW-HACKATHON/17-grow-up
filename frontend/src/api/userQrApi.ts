@@ -2,6 +2,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export interface QrTokenResponse {
   qrToken: string
+  expiresAt: string
 }
 
 interface QrResponse {
@@ -25,7 +26,7 @@ export async function createUserQr(
 
   const result: QrResponse = await response.json()
 
-  if (!response.ok || !result.success) {
+  if (!response.ok || !result.success || !result.data) {
     console.error('QR 토큰 발급 실패:', response.status, result.error)
 
     throw new Error(result.error?.code ?? 'QR_CREATE_FAILED')
