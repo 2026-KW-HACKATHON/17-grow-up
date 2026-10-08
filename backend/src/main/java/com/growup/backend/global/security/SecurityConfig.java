@@ -1,3 +1,4 @@
+
 package com.growup.backend.global.security;
 
 import java.util.List;
@@ -57,6 +58,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/home")
+                        .hasRole(Role.USER.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/me/qr")
                         .hasRole(Role.USER.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/verifications")

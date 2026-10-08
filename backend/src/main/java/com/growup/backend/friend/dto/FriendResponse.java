@@ -5,6 +5,7 @@ import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public record FriendResponse(
         Long friendId,
@@ -14,8 +15,10 @@ public record FriendResponse(
         LocalDateTime lastActiveAt
 ) {
 
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
+
     public static FriendResponse from(User friend) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(KST_ZONE_ID);
         LocalDate lastPracticeDate = friend.getLastPracticeDate();
 
         int currentStreak = 0;

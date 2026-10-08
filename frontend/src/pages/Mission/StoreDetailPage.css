@@ -2,32 +2,37 @@
   width: 100%;
   max-width: 390px;
   min-height: 100vh;
+
   margin: 0 auto;
+
   background: #ffffff;
   color: #111111;
 }
 
 .store-detail-page__content {
-  padding: 38px 28px 32px;
+  padding: 24px 28px 40px;
   box-sizing: border-box;
 }
 
+/* 헤더 */
 .store-detail-page__header {
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .store-detail-page__back-button {
-  width: 24px;
-  height: 24px;
-  margin: 0 0 20px 0;
-  padding: 0;
+  width: 28px;
+  height: 28px;
 
-  border: 0;
+  padding: 0;
+  margin: 0 0 14px;
+
+  border: none;
   background: transparent;
 
   color: #999999;
-  font-size: 24px;
-  line-height: 1;
+  font-size: 26px;
 
   cursor: pointer;
 }
@@ -35,90 +40,112 @@
 .store-detail-page__header h1 {
   margin: 0;
 
-  font-size: 22px;
+  font-family: Pretendard, sans-serif;
+  font-size: 21px;
   font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: -0.4px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
 }
 
-.store-detail-page__filters {
+/* 카테고리 */
+.store-detail-page__categories {
   display: flex;
   align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
 
-  margin-bottom: 14px;
+  gap: 6px;
+  margin-top: 24px;
+  margin-bottom: 10px;
 }
 
-.store-detail-page__filter {
-  height: 25px;
-  padding: 0 10px;
+.store-detail-page__category {
+  min-height: 28px;
+  padding: 4px 12px;
 
-  border: 1px solid #4d8b59;
-  border-radius: 999px;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
 
   background: #ffffff;
-  color: #111111;
+  color: #555555;
 
-  font-size: 13.53px;
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
   font-weight: 500;
 
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.store-detail-page__filter--active {
+.store-detail-page__category--active {
   background: #4d8b59;
+  border-color: #4d8b59;
   color: #ffffff;
+  font-weight: 700;
 }
 
+/* 매장 목록 */
 .store-detail-page__list {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 }
 
 .store-detail-page__store {
-  width: 100%;
-  min-height: 82px;
-
   display: flex;
   align-items: center;
 
   gap: 16px;
+  min-height: 92px;
+  padding: 14px 0;
 
-  padding: 16px 0;
-
-  border: 0;
   border-bottom: 1px solid #eeeeee;
 
-  background: transparent;
-
-  text-align: left;
-  font: inherit;
-
-  cursor: pointer;
+  box-sizing: border-box;
 }
 
+/* 피그마의 회색 이미지 영역 */
 .store-detail-page__thumbnail {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
 
   flex-shrink: 0;
 
-  border-radius: 8px;
+  border-radius: 12px;
   background: #dddddd;
 }
 
 .store-detail-page__store-info {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
 }
 
 .store-detail-page__store-info strong {
+  color: #111111;
+
+  font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #111111;
+  line-height: 1.4;
 }
 
 .store-detail-page__store-info span {
-  font-size: 14px;
   color: #999999;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.store-detail-page__empty {
+  margin-top: 40px;
+
+  color: #999999;
+
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+
+  text-align: center;
 }

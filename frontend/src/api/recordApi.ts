@@ -4,7 +4,7 @@ export interface RecordSummary {
   totalCarbonG: number
   totalMissionCount: number
   currentStreak: number
-  longestStreak: number
+  longestStreak?: number
 }
 
 export interface RecordHistory {
@@ -47,7 +47,8 @@ interface SummaryResponse {
 interface HistoryResponse {
   success: boolean
   data?: {
-    records: RecordHistory[]
+    records?: RecordHistory[]
+    histories?: RecordHistory[]
   }
   error?: ApiError
 }
@@ -66,6 +67,7 @@ interface FriendsResponse {
   error?: ApiError
 }
 
+// 기록 요약 조회
 export async function getRecordSummary(
   accessToken: string,
 ): Promise<RecordSummary> {
@@ -77,7 +79,7 @@ export async function getRecordSummary(
   })
 
   const result: SummaryResponse = await response.json()
-  console.log('요약 API 응답:', result)
+
   if (!response.ok || !result.success || !result.data) {
     throw new Error(result.error?.code ?? 'RECORD_SUMMARY_FAILED')
   }
@@ -85,6 +87,7 @@ export async function getRecordSummary(
   return result.data
 }
 
+// 미션 수행 이력 조회
 export async function getRecordHistory(
   accessToken: string,
 ): Promise<RecordHistory[]> {
@@ -96,14 +99,17 @@ export async function getRecordHistory(
   })
 
   const result: HistoryResponse = await response.json()
-  console.log('히스토리 API 응답:', result)
+
+  console.log('실제 미션 수행 이력 API 응답:', result)
+
   if (!response.ok || !result.success) {
     throw new Error(result.error?.code ?? 'RECORD_HISTORY_FAILED')
   }
 
-  return result.data?.records ?? []
+  return result.data?.histories ?? result.data?.records ?? []
 }
 
+// 실천 달력 조회
 export async function getRecordCalendar(
   accessToken: string,
   year: number,
@@ -120,7 +126,7 @@ export async function getRecordCalendar(
   )
 
   const result: CalendarResponse = await response.json()
-  console.log('캘린더 API 응답:', result)
+
   if (!response.ok || !result.success || !result.data) {
     throw new Error(result.error?.code ?? 'RECORD_CALENDAR_FAILED')
   }
@@ -128,6 +134,7 @@ export async function getRecordCalendar(
   return result.data
 }
 
+// 친구 기록 조회
 export async function getFriendRecords(
   accessToken: string,
 ): Promise<FriendRecord[]> {
@@ -139,8 +146,6 @@ export async function getFriendRecords(
   })
 
   const result: FriendsResponse = await response.json()
-
-  console.log('친구 기록 API 응답:', result)
 
   if (!response.ok || !result.success) {
     throw new Error(result.error?.code ?? 'FRIEND_RECORDS_FAILED')
