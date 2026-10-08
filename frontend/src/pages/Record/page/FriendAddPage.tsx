@@ -1,57 +1,137 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../../components/BottomNav/BottomNav'
+
+import {
+  deleteFriend,
+  getFriends,
+  getInviteInfo,
+  type Friend,
+  type InviteInfo,
+} from '../../../api/friendApi'
+
 import './FriendAddPage.css'
-
-interface Friend {
-  id: number
-  nickname: string
-  streak: number
-  lastActive: string
-}
-
-const initialFriends: Friend[] = [
-  {
-    id: 1,
-    nickname: '홍길동',
-    streak: 8,
-    lastActive: '최근 접속: 오늘 14:32',
-  },
-  {
-    id: 2,
-    nickname: '홍길서',
-    streak: 4,
-    lastActive: '최근 접속: 오늘 14:32',
-  },
-]
 
 function FriendAddPage() {
   const navigate = useNavigate()
 
   const [copied, setCopied] = useState(false)
-  const [friends, setFriends] = useState<Friend[]>(initialFriends)
+
+  const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null)
+
+  const [friends, setFriends] = useState<Friend[]>([])
+
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
 
-  const inviteLink = 'https://wolgye1rowoon.app/invite/1234'
+  const [isLoading, setIsLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchFriendData = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const [inviteData, friendData] = await Promise.all([
+          getInviteInfo(accessToken),
+          getFriends(accessToken),
+        ])
+
+        setInviteInfo(inviteData)
+        setFriends(friendData)
+      } catch (error) {
+        console.error('친구 정보 조회 실패:', error)
+
+        setError('친구 정보를 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchFriendData()
+  }, [])
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(inviteLink)
+    if (!inviteInfo?.inviteUrl) return
 
-    setCopied(true)
+    try {
+      await navigator.clipboard.writeText(inviteInfo.inviteUrl)
 
-    setTimeout(() => {
-      setCopied(false)
-    }, 1500)
+      setCopied(true)
+
+      setTimeout(() => {
+        setCopied(false)
+      }, 1500)
+    } catch (error) {
+      console.error('초대 링크 복사 실패:', error)
+    }
   }
 
-  const handleDeleteFriend = () => {
+  const handleDeleteFriend = async () => {
     if (!selectedFriend) return
 
-    setFriends((prevFriends) =>
-      prevFriends.filter((friend) => friend.id !== selectedFriend.id),
-    )
+    const accessToken = localStorage.getItem('accessToken')
 
-    setSelectedFriend(null)
+    if (!accessToken) {
+      setError('로그인이 필요합니다.')
+      return
+    }
+
+    try {
+      setIsDeleting(true)
+
+      await deleteFriend(accessToken, selectedFriend.friendId)
+
+      setFriends((prevFriends) =>
+        prevFriends.filter(
+          (friend) => friend.friendId !== selectedFriend.friendId,
+        ),
+      )
+
+      setSelectedFriend(null)
+    } catch (error) {
+      console.error('친구 삭제 실패:', error)
+
+      if (error instanceof Error && error.message === 'FRIEND_NOT_FOUND') {
+        setError('친구 관계를 찾을 수 없습니다.')
+        return
+      }
+
+      setError('친구를 삭제하지 못했습니다.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="friend-add-page">
+        <main className="friend-add-page__content">
+          <p>친구 정보를 불러오는 중...</p>
+        </main>
+
+        <BottomNav active="record" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="friend-add-page">
+        <main className="friend-add-page__content">
+          <p>{error}</p>
+        </main>
+
+        <BottomNav active="record" />
+      </div>
+    )
   }
 
   return (
@@ -87,7 +167,9 @@ function FriendAddPage() {
             즐겨볼 수 있어요.
           </p>
 
-          <div className="friend-add-page__link-box">{inviteLink}</div>
+          <div className="friend-add-page__link-box">
+            {inviteInfo?.inviteUrl ?? ''}
+          </div>
 
           <button
             type="button"
@@ -102,29 +184,35 @@ function FriendAddPage() {
           <h2>내 친구</h2>
 
           <div className="friend-add-page__friend-list">
-            {friends.map((friend) => (
-              <div key={friend.id} className="friend-add-page__friend-item">
-                <div className="friend-add-page__friend-avatar" />
-
-                <div className="friend-add-page__friend-info">
-                  <strong>{friend.nickname}</strong>
-                </div>
-
-                <div className="friend-add-page__friend-status">
-                  <strong>{friend.streak}일 연속 실천 중</strong>
-                  <span>{friend.lastActive}</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="friend-add-page__friend-delete"
-                  onClick={() => setSelectedFriend(friend)}
-                  aria-label={`${friend.nickname} 친구 삭제`}
+            {friends.length > 0 ? (
+              friends.map((friend) => (
+                <div
+                  key={friend.friendId}
+                  className="friend-add-page__friend-item"
                 >
-                  <img src="/friend-delete.svg" alt="" />
-                </button>
-              </div>
-            ))}
+                  <div className="friend-add-page__friend-avatar" />
+
+                  <div className="friend-add-page__friend-info">
+                    <strong>{friend.nickname}</strong>
+
+                    <span>Lv.{friend.characterLevel}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="friend-add-page__friend-delete"
+                    onClick={() => setSelectedFriend(friend)}
+                    aria-label={`${friend.nickname} 친구 삭제`}
+                  >
+                    <img src="/friend-delete.svg" alt="" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="friend-add-page__empty">
+                아직 연결된 친구가 없어요.
+              </p>
+            )}
           </div>
         </section>
       </main>
@@ -143,14 +231,16 @@ function FriendAddPage() {
               type="button"
               className="friend-add-page__modal-delete"
               onClick={handleDeleteFriend}
+              disabled={isDeleting}
             >
-              삭제
+              {isDeleting ? '삭제 중...' : '삭제'}
             </button>
 
             <button
               type="button"
               className="friend-add-page__modal-cancel"
               onClick={() => setSelectedFriend(null)}
+              disabled={isDeleting}
             >
               취소
             </button>

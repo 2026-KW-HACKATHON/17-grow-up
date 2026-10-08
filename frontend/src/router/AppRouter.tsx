@@ -22,6 +22,10 @@ import MissionQrPage from '../pages/Mission/MissionQrPage'
 import MissionSuccessPage from '../pages/Mission/MissionSuccessPage'
 import AlarmPage from '../pages/Main/AlarmPage'
 import StoreDetailPage from '../pages/Mission/StoreDetailPage'
+import CharacterGrowthPage from '../pages/Main/CharacterGrowthPage'
+import AdminMissionDetailPage from '../pages/Admin/AdminMissionDetailPage'
+import AdminQrPage from '../pages/Admin/AdminQrPage'
+import FriendInvitePage from '../pages/Record/page/FriendInvitePage'
 
 function AppRouter() {
   return (
@@ -53,13 +57,16 @@ function AppRouter() {
 
       <Route path="/my" element={<MyPage />} />
       <Route path="/my/user-info" element={<UserInfoPage />} />
-      <Route
-        path="/my/user-info/password"
-        element={<PasswordChangePage />}
-      />
+      <Route path="/my/user-info/password" element={<PasswordChangePage />} />
 
       <Route path="/stores" element={<StoreDetailPage />} />
       <Route path="/alarm" element={<AlarmPage />} />
+
+      <Route path="/growth" element={<CharacterGrowthPage />} />
+      <Route path="/admin/mission" element={<AdminMissionDetailPage />} />
+
+      <Route path="/admin/mission/:missionId/qr" element={<AdminQrPage />} />
+      <Route path="/invite/:inviteCode" element={<FriendInvitePage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

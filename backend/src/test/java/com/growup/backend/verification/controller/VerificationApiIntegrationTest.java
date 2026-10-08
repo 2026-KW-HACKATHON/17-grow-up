@@ -13,6 +13,10 @@ import com.growup.backend.mission.domain.MissionCategory;
 import com.growup.backend.mission.domain.MissionCompletion;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.partner.domain.Partner;
+import com.growup.backend.partner.domain.PartnerAccount;
+import com.growup.backend.partner.repository.PartnerAccountRepository;
+import com.growup.backend.partner.repository.PartnerRepository;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
@@ -56,9 +60,24 @@ class VerificationApiIntegrationTest {
     @Autowired
     private MissionCompletionRepository missionCompletionRepository;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
+    @Autowired
+    private PartnerAccountRepository partnerAccountRepository;
+
+    private PartnerAccount partnerAccount;
+
     @BeforeEach
     void setUp() {
         cleanDatabase();
+        Partner partner = partnerRepository.saveAndFlush(Partner.create("그루업 테스트 카페"));
+        partnerAccount = partnerAccountRepository.saveAndFlush(PartnerAccount.create(
+                "partner",
+                "hashed-password",
+                true,
+                partner
+        ));
     }
 
     @AfterEach
@@ -96,12 +115,14 @@ class VerificationApiIntegrationTest {
         );
         assertThat(responseDate).isIn(dateBeforeRequest, dateAfterRequest);
 
-        MissionCompletion completion = missionCompletionRepository.findAll()
-                .stream()
-                .findFirst()
-                .orElseThrow();
+        MissionCompletion completion = missionCompletionRepository
+                .findPointHistoryByUserId(user.getId())
+                .getFirst();
         assertThat(completion.getUser().getId()).isEqualTo(user.getId());
         assertThat(completion.getMission().getId()).isEqualTo(mission.getId());
+        assertThat(completion.getPartner().getId())
+                .isEqualTo(partnerAccount.getPartner().getId());
+        assertThat(completion.getPartner().getName()).isEqualTo("그루업 테스트 카페");
         assertThat(completion.getCompletedDate()).isEqualTo(responseDate);
 
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
@@ -338,7 +359,8 @@ class VerificationApiIntegrationTest {
     }
 
     private String partnerBearerToken() {
-        return BEARER_PREFIX + jwtTokenProvider.createAccessToken(10L, Role.PARTNER);
+        return BEARER_PREFIX
+                + jwtTokenProvider.createAccessToken(partnerAccount.getId(), Role.PARTNER);
     }
 
     private String userBearerToken() {
@@ -347,6 +369,8 @@ class VerificationApiIntegrationTest {
 
     private void cleanDatabase() {
         missionCompletionRepository.deleteAll();
+        partnerAccountRepository.deleteAll();
+        partnerRepository.deleteAll();
         missionRepository.deleteAll();
         userRepository.deleteAll();
     }

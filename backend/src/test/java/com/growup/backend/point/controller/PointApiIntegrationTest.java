@@ -10,6 +10,13 @@ import com.growup.backend.global.exception.BusinessException;
 import com.growup.backend.global.exception.ErrorCode;
 import com.growup.backend.global.security.JwtTokenProvider;
 import com.growup.backend.global.security.Role;
+import com.growup.backend.mission.domain.Mission;
+import com.growup.backend.mission.domain.MissionCategory;
+import com.growup.backend.mission.domain.MissionCompletion;
+import com.growup.backend.mission.repository.MissionCompletionRepository;
+import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.partner.domain.Partner;
+import com.growup.backend.partner.repository.PartnerRepository;
 import com.growup.backend.point.domain.PointConversion;
 import com.growup.backend.point.dto.PointConversionRequest;
 import com.growup.backend.point.repository.PointConversionRepository;
@@ -18,6 +25,9 @@ import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -38,6 +49,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class PointApiIntegrationTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,6 +59,18 @@ class PointApiIntegrationTest {
 
     @Autowired
     private PointConversionRepository pointConversionRepository;
+
+    @Autowired
+    private MissionRepository missionRepository;
+
+    @Autowired
+    private MissionCompletionRepository missionCompletionRepository;
+
+    @Autowired
+    private PartnerRepository partnerRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private PointService pointService;
@@ -198,6 +222,110 @@ class PointApiIntegrationTest {
     }
 
     @Test
+    void getsOwnPointEarningHistoryWithMonthlyTotalAndPartner() throws Exception {
+        User currentUser = saveUser("growup", "ABCDEFGH", 1_230L);
+        User otherUser = saveUser("other", "HGFEDCBA", 0L);
+        Mission tumbler = saveMission("텀블러 사용하기", 500L);
+        Mission bag = saveMission("장바구니 사용하기", 200L);
+        Mission cutlery = saveMission("일회용 수저·포크 사용 안 하기", 300L);
+        Partner partner = partnerRepository.saveAndFlush(Partner.create("월계동 그린카페"));
+        YearMonth currentMonth = YearMonth.now(KST_ZONE_ID);
+        LocalDate today = LocalDate.now(KST_ZONE_ID);
+
+        MissionCompletion previousMonth = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(
+                        currentUser,
+                        cutlery,
+                        partner,
+                        currentMonth.minusMonths(1).atEndOfMonth()
+                )
+        );
+        MissionCompletion legacyCompletion = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(currentUser, bag, currentMonth.atDay(1))
+        );
+        MissionCompletion newest = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(currentUser, tumbler, partner, today)
+        );
+        missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(otherUser, tumbler, partner, today)
+        );
+
+        setCompletedAt(previousMonth, LocalDateTime.of(2026, 9, 30, 10, 0));
+        setCompletedAt(legacyCompletion, LocalDateTime.of(2026, 10, 8, 10, 0));
+        setCompletedAt(newest, LocalDateTime.of(2026, 10, 8, 10, 0));
+
+        mockMvc.perform(get("/api/v1/points/history")
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                userBearerToken(currentUser.getId())
+                        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.availablePoints").value(1_230))
+                .andExpect(jsonPath("$.data.monthlyEarnedPoints").value(700))
+                .andExpect(jsonPath("$.data.histories.length()").value(3))
+                .andExpect(jsonPath("$.data.histories[0].missionId").value(tumbler.getId()))
+                .andExpect(jsonPath("$.data.histories[0].missionName")
+                        .value("텀블러 사용하기"))
+                .andExpect(jsonPath("$.data.histories[0].partnerName")
+                        .value("월계동 그린카페"))
+                .andExpect(jsonPath("$.data.histories[0].earnedPoints").value(500))
+                .andExpect(jsonPath("$.data.histories[0].earnedAt")
+                        .value("2026-10-08T10:00:00"))
+                .andExpect(jsonPath("$.data.histories[1].missionId").value(bag.getId()))
+                .andExpect(jsonPath("$.data.histories[1].partnerName").doesNotExist())
+                .andExpect(jsonPath("$.data.histories[2].missionId").value(cutlery.getId()));
+    }
+
+    @Test
+    void userWithoutMissionCompletionsGetsEmptyPointHistory() throws Exception {
+        User user = saveUser("growup", "ABCDEFGH", 0L);
+
+        mockMvc.perform(get("/api/v1/points/history")
+                        .header(HttpHeaders.AUTHORIZATION, userBearerToken(user.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.availablePoints").value(0))
+                .andExpect(jsonPath("$.data.monthlyEarnedPoints").value(0))
+                .andExpect(jsonPath("$.data.histories").isEmpty());
+    }
+
+    @Test
+    void monthlyEarnedPointsUseCompletedDateInsteadOfCompletedAt() throws Exception {
+        User user = saveUser("growup", "ABCDEFGH", 0L);
+        Mission previousMonthMission = saveMission("지난달 미션", 300L);
+        Mission currentMonthMission = saveMission("이번달 미션", 500L);
+        YearMonth currentMonth = YearMonth.now(KST_ZONE_ID);
+
+        MissionCompletion previousMonthCompletion = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(
+                        user,
+                        previousMonthMission,
+                        currentMonth.minusMonths(1).atEndOfMonth()
+                )
+        );
+        MissionCompletion currentMonthCompletion = missionCompletionRepository.saveAndFlush(
+                MissionCompletion.create(
+                        user,
+                        currentMonthMission,
+                        currentMonth.atDay(1)
+                )
+        );
+        setCompletedAt(
+                previousMonthCompletion,
+                currentMonth.atDay(1).atTime(12, 0)
+        );
+        setCompletedAt(
+                currentMonthCompletion,
+                currentMonth.minusMonths(1).atEndOfMonth().atTime(12, 0)
+        );
+
+        mockMvc.perform(get("/api/v1/points/history")
+                        .header(HttpHeaders.AUTHORIZATION, userBearerToken(user.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.monthlyEarnedPoints").value(500));
+    }
+
+    @Test
     void unauthenticatedRequestsReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/points/conversions"))
                 .andExpect(status().isUnauthorized())
@@ -208,6 +336,10 @@ class PointApiIntegrationTest {
                         .content("""
                                 {"points": 10000}
                                 """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+        mockMvc.perform(get("/api/v1/points/history"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
@@ -228,6 +360,11 @@ class PointApiIntegrationTest {
                         .content("""
                                 {"points": 10000}
                                 """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+
+        mockMvc.perform(get("/api/v1/points/history")
+                        .header(HttpHeaders.AUTHORIZATION, partnerToken))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
@@ -308,8 +445,30 @@ class PointApiIntegrationTest {
         return BEARER_PREFIX + jwtTokenProvider.createAccessToken(userId, Role.USER);
     }
 
+    private Mission saveMission(String name, long rewardPoints) {
+        return missionRepository.saveAndFlush(Mission.create(
+                name,
+                name + " 설명",
+                MissionCategory.REUSABLE,
+                100L,
+                rewardPoints,
+                true
+        ));
+    }
+
+    private void setCompletedAt(MissionCompletion completion, LocalDateTime completedAt) {
+        jdbcTemplate.update(
+                "update mission_completions set completed_at = ? where id = ?",
+                completedAt,
+                completion.getId()
+        );
+    }
+
     private void cleanDatabase() {
+        missionCompletionRepository.deleteAll();
         pointConversionRepository.deleteAll();
+        partnerRepository.deleteAll();
+        missionRepository.deleteAll();
         userRepository.deleteAll();
     }
 }

@@ -1,0 +1,129 @@
+.admin-mission-page {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+
+  margin: 0 auto;
+
+  background: #ffffff;
+  color: #111111;
+}
+
+.admin-mission-page__content {
+  padding: 24px 24px 40px;
+
+  box-sizing: border-box;
+}
+
+.admin-mission-page__back {
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+  margin-bottom: 18px;
+
+  border: 0;
+  background: transparent;
+
+  color: #999999;
+
+  font-size: 30px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.admin-mission-page__image-box {
+  width: 100%;
+  height: 150px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+}
+
+.admin-mission-page__image-box img {
+  width: 110px;
+  height: 110px;
+
+  object-fit: contain;
+}
+
+.admin-mission-page__intro {
+  margin-top: 24px;
+}
+
+.admin-mission-page__category {
+  color: #4d8b59;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-mission-page__intro h1 {
+  margin: 6px 0 8px;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.admin-mission-page__intro p {
+  margin: 0;
+
+  color: #666666;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-mission-page__info {
+  margin-top: 28px;
+
+  padding: 6px 16px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.admin-mission-page__info > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 48px;
+}
+
+.admin-mission-page__info > div + div {
+  border-top: 1px solid #eeeeee;
+}
+
+.admin-mission-page__info span {
+  font-size: 12px;
+}
+
+.admin-mission-page__info strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-mission-page__qr-button {
+  width: 100%;
+  height: 52px;
+
+  margin-top: 24px;
+
+  border: 0;
+  border-radius: 14px;
+
+  background: #4d8b59;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+}

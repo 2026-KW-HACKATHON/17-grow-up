@@ -3,12 +3,16 @@ package com.growup.backend.user.service;
 import com.growup.backend.global.exception.BusinessException;
 import com.growup.backend.global.exception.ErrorCode;
 import com.growup.backend.global.security.JwtTokenProvider;
+import com.growup.backend.mission.repository.MissionCompletionRepository;
+import com.growup.backend.user.domain.CharacterGrowthPolicy;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.dto.ChangePasswordRequest;
+import com.growup.backend.user.dto.MissionStatResponse;
 import com.growup.backend.user.dto.QrTokenResponse;
 import com.growup.backend.user.dto.UpdateNicknameRequest;
 import com.growup.backend.user.dto.UpdateNicknameResponse;
 import com.growup.backend.user.dto.UserMeResponse;
+import com.growup.backend.user.dto.UserGrowthResponse;
 import com.growup.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,9 +27,26 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final MissionCompletionRepository missionCompletionRepository;
 
     public UserMeResponse getMyInfo(Long accountId) {
         return UserMeResponse.from(findUser(accountId));
+    }
+
+    public UserGrowthResponse getMyGrowth(Long accountId) {
+        User user = findUser(accountId);
+        long totalMissionCount = missionCompletionRepository.countByUserId(accountId);
+        var missionStats = missionCompletionRepository.findMissionStatsByUserId(accountId)
+                .stream()
+                .map(stat -> MissionStatResponse.from(stat, totalMissionCount))
+                .toList();
+
+        return UserGrowthResponse.from(
+                user,
+                CharacterGrowthPolicy.calculate(user.getTotalCarbonG()),
+                totalMissionCount,
+                missionStats
+        );
     }
 
     public QrTokenResponse issueQrToken(Long accountId) {

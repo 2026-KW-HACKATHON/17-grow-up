@@ -1,5 +1,6 @@
 export interface MissionData {
   id: string
+  missionId: number
   title: string
   category: string
   point: number
@@ -13,9 +14,10 @@ export interface MissionData {
 export const missions: MissionData[] = [
   {
     id: 'tumbler',
+    missionId: 1,
     title: '텀블러 사용하기',
     category: '카페',
-    point: 50,
+    point: 500,
     carbon: 230,
     image: '/tumbler.svg',
     backgroundColor: '#E9F4EC',
@@ -24,9 +26,10 @@ export const missions: MissionData[] = [
   },
   {
     id: 'shopping-bag',
+    missionId: 2,
     title: '장바구니 사용하기',
     category: '마트·편의점',
-    point: 50,
+    point: 200,
     carbon: 47,
     image: '/shopping-bag.svg',
     backgroundColor: '#FFF5E0',
@@ -35,9 +38,10 @@ export const missions: MissionData[] = [
   },
   {
     id: 'container',
+    missionId: 3,
     title: '포장 시 다회용기 사용하기',
     category: '음식점',
-    point: 50,
+    point: 500,
     carbon: 200,
     image: '/container.svg',
     backgroundColor: '#EDF3FC',
@@ -46,9 +50,10 @@ export const missions: MissionData[] = [
   },
   {
     id: 'empty-plate',
+    missionId: 4,
     title: '음식 남기지 않기',
     category: '음식점',
-    point: 50,
+    point: 100,
     carbon: 5,
     image: '/empty-plate.svg',
     backgroundColor: '#FCE8E5',
@@ -57,9 +62,10 @@ export const missions: MissionData[] = [
   },
   {
     id: 'no-disposable',
+    missionId: 5,
     title: '일회용 수저·빨대 받지 않기',
     category: '음식점·카페',
-    point: 50,
+    point: 300,
     carbon: 110,
     image: '/no-disposable.svg',
     backgroundColor: '#DFE5FB',

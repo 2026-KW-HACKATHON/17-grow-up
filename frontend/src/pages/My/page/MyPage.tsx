@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../../components/BottomNav/BottomNav'
+import { getMyInfo } from '../../../api/userApi'
 import MyMenuItem from '../components/MyMenuItem'
 import LogoutModal from '../components/LogoutModal'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -9,12 +11,30 @@ import './MyPage.css'
 function MyPage() {
   const navigate = useNavigate()
 
+  const [nickname, setNickname] = useState('')
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] =
     useState(false)
 
+  useEffect(() => {
+    const fetchMyInfo = async () => {
+      try {
+        const data = await getMyInfo()
+        setNickname(data.nickname)
+      } catch (error) {
+        console.error('내 정보 조회 실패:', error)
+      }
+    }
+
+    fetchMyInfo()
+  }, [])
+
   const handleUserInfoClick = () => {
     navigate('/my/user-info')
+  }
+
+  const handleRecordClick = () => {
+    navigate('/record')
   }
 
   const handleProfileEditClick = () => {
@@ -23,6 +43,10 @@ function MyPage() {
 
   const handleProfileEditClose = () => {
     setIsProfileEditModalOpen(false)
+  }
+
+  const handleNicknameUpdate = (newNickname: string) => {
+    setNickname(newNickname)
   }
 
   const handleLogoutClick = () => {
@@ -34,9 +58,9 @@ function MyPage() {
   }
 
   const handleLogoutConfirm = () => {
+    localStorage.removeItem('accessToken')
     setIsLogoutModalOpen(false)
-
-    // 실제 로그아웃 기능은 추후 인증 로직과 연결
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -50,7 +74,7 @@ function MyPage() {
           />
 
           <div className="my-page__profile-info">
-            <strong className="my-page__name">김탄탄</strong>
+            <strong className="my-page__name">{nickname}</strong>
 
             <button
               type="button"
@@ -80,6 +104,7 @@ function MyPage() {
             <MyMenuItem
               icon="/history.svg"
               label="나의 기록"
+              onClick={handleRecordClick}
             />
 
             <MyMenuItem
@@ -96,6 +121,8 @@ function MyPage() {
 
       {isProfileEditModalOpen && (
         <ProfileEditModal
+          currentNickname={nickname}
+          onNicknameUpdate={handleNicknameUpdate}
           onClose={handleProfileEditClose}
         />
       )}

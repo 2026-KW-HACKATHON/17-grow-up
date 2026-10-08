@@ -1,114 +1,170 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../../components/BottomNav/BottomNav'
+
+import {
+  getFriendRecords,
+  getRecordCalendar,
+  getRecordHistory,
+  getRecordSummary,
+  type FriendRecord,
+  type PracticeDay,
+  type RecordHistory,
+  type RecordSummary,
+} from '../../../api/recordApi'
+
 import './RecordPage.css'
 
 type RecordTab = 'mine' | 'friend'
-interface MonthlyActivity {
-  id: number
-  title: string
-  place: string
-  point: number
-  time: string
-  image?: string
+
+const now = new Date()
+
+const YEAR = now.getFullYear()
+const MONTH = now.getMonth() + 1
+
+const missionImageMap: Record<string, string> = {
+  '텀블러 사용하기': '/tumbler.svg',
+  '장바구니 사용하기': '/shopping-bag.svg',
+  '포장 시 다회용기 사용하기': '/container.svg',
+  '음식 안 남기기': '/empty-plate.svg',
+  '일회용 수저·포크 사용 안 하기': '/no-disposable.svg',
 }
-
-const monthlyActivities: MonthlyActivity[] = [
-  {
-    id: 1,
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-    image: '/tumbler.svg',
-  },
-  {
-    id: 2,
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-]
-interface Friend {
-  id: number
-  rank: number
-  nickname: string
-  streak: number
-}
-
-const friends: Friend[] = [
-  {
-    id: 1,
-    rank: 1,
-    nickname: '홍길동',
-    streak: 8,
-  },
-  {
-    id: 2,
-    rank: 2,
-    nickname: '나',
-    streak: 5,
-  },
-  {
-    id: 3,
-    rank: 3,
-    nickname: '홍길서',
-    streak: 4,
-  },
-  {
-    id: 4,
-    rank: 4,
-    nickname: '홍길남',
-    streak: 3,
-  },
-  {
-    id: 5,
-    rank: 5,
-    nickname: '홍길북',
-    streak: 1,
-  },
-]
-
-const calendarDays = [
-  null,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-  26,
-  27,
-  28,
-  29,
-  30,
-]
-
-const completedDays = [1, 2, 3, 4, 5]
 
 function RecordPage() {
-  const [activeTab, setActiveTab] = useState<RecordTab>('mine')
   const navigate = useNavigate()
+
+  const [activeTab, setActiveTab] = useState<RecordTab>('mine')
+
+  const [summary, setSummary] = useState<RecordSummary | null>(null)
+
+  const [histories, setHistories] = useState<RecordHistory[]>([])
+
+  const [practiceDays, setPracticeDays] = useState<PracticeDay[]>([])
+
+  const [friends, setFriends] = useState<FriendRecord[]>([])
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchRecordData = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const [summaryData, historyData, calendarData, friendData] =
+          await Promise.all([
+            getRecordSummary(accessToken),
+            getRecordHistory(accessToken),
+            getRecordCalendar(accessToken, YEAR, MONTH),
+            getFriendRecords(accessToken),
+          ])
+
+        setSummary(summaryData)
+        const monthlyHistories = historyData.filter((history) => {
+          const date = new Date(history.completedAt)
+
+          const year = Number(
+            new Intl.DateTimeFormat('en-US', {
+              timeZone: 'Asia/Seoul',
+              year: 'numeric',
+            }).format(date),
+          )
+
+          const month = Number(
+            new Intl.DateTimeFormat('en-US', {
+              timeZone: 'Asia/Seoul',
+              month: 'numeric',
+            }).format(date),
+          )
+
+          return year === YEAR && month === MONTH
+        })
+
+        setHistories(monthlyHistories)
+        setPracticeDays(calendarData.practiceDays)
+        setFriends(friendData)
+      } catch (error) {
+        console.error('실천 기록 조회 실패:', error)
+
+        setError('실천 기록을 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRecordData()
+  }, [])
+
+  const calendarDays = useMemo(() => {
+    const firstDay = new Date(YEAR, MONTH - 1, 1)
+
+    const lastDate = new Date(YEAR, MONTH, 0).getDate()
+
+    // JS: 일요일 0 ~ 토요일 6
+    // 화면: 월요일부터 시작
+    const firstDayIndex = (firstDay.getDay() + 6) % 7
+
+    const days: (number | null)[] = []
+
+    for (let i = 0; i < firstDayIndex; i += 1) {
+      days.push(null)
+    }
+
+    for (let day = 1; day <= lastDate; day += 1) {
+      days.push(day)
+    }
+
+    return days
+  }, [])
+
+  const completedDays = useMemo(() => {
+    return practiceDays.map((practice) => {
+      const [, , day] = practice.date.split('-').map(Number)
+
+      return day
+    })
+  }, [practiceDays])
+
+  const formatCompletedAt = (completedAt: string) => {
+    const date = new Date(completedAt)
+
+    return date.toLocaleString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="record-page">
+        <main className="record-page__content">
+          <p>실천 기록을 불러오는 중...</p>
+        </main>
+
+        <BottomNav active="record" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="record-page">
+        <main className="record-page__content">
+          <p>{error}</p>
+        </main>
+
+        <BottomNav active="record" />
+      </div>
+    )
+  }
 
   return (
     <div className="record-page">
@@ -140,7 +196,9 @@ function RecordPage() {
         {activeTab === 'mine' ? (
           <>
             <section className="record-page__calendar">
-              <h2 className="record-page__calendar-title">2026년 9월</h2>
+              <h2 className="record-page__calendar-title">
+                {YEAR}년 {MONTH}월
+              </h2>
 
               <div className="record-page__week">
                 <span>월</span>
@@ -182,22 +240,28 @@ function RecordPage() {
             <section className="record-page__stats">
               <div className="record-page__stat">
                 <span>연속 실천</span>
+
                 <strong>
-                  5<span>일</span>
+                  {summary?.currentStreak ?? 0}
+                  <span>일</span>
                 </strong>
               </div>
 
               <div className="record-page__stat">
                 <span>최고 기록</span>
+
                 <strong>
-                  12<span>일</span>
+                  {summary?.longestStreak ?? 0}
+                  <span>일</span>
                 </strong>
               </div>
 
               <div className="record-page__stat">
                 <span>누적 실천</span>
+
                 <strong>
-                  28<span>회</span>
+                  {summary?.totalMissionCount ?? 0}
+                  <span>회</span>
                 </strong>
               </div>
             </section>
@@ -206,27 +270,38 @@ function RecordPage() {
               <h2>이번 달 실천 내역</h2>
 
               <div className="record-page__activity-list">
-                {monthlyActivities.map((activity) => (
-                  <div key={activity.id} className="record-page__activity-item">
-                    <div className="record-page__activity-icon">
-                      {activity.image ? (
-                        <img src={activity.image} alt="" />
-                      ) : (
-                        <div className="record-page__activity-placeholder" />
-                      )}
-                    </div>
+                {histories.length > 0 ? (
+                  histories.map((activity, index) => (
+                    <div
+                      key={`${activity.missionId}-${activity.completedAt}-${index}`}
+                      className="record-page__activity-item"
+                    >
+                      <div className="record-page__activity-icon">
+                        <img
+                          src={
+                            missionImageMap[activity.missionName] ??
+                            '/tumbler.svg'
+                          }
+                          alt=""
+                        />
+                      </div>
 
-                    <div className="record-page__activity-info">
-                      <strong>{activity.title}</strong>
-                      <span>{activity.place}</span>
-                    </div>
+                      <div className="record-page__activity-info">
+                        <strong>{activity.missionName}</strong>
 
-                    <div className="record-page__activity-point">
-                      <strong>+{activity.point}P</strong>
-                      <span>{activity.time}</span>
+                        <span>탄소 감축 실천</span>
+                      </div>
+
+                      <div className="record-page__activity-point">
+                        <strong>+{activity.carbonReductionG}g</strong>
+
+                        <span>{formatCompletedAt(activity.completedAt)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="record-page__empty">아직 실천 내역이 없어요.</p>
+                )}
               </div>
             </section>
           </>
@@ -236,36 +311,36 @@ function RecordPage() {
               <h2 className="record-page__friend-title">친구들의 초록 성장</h2>
 
               <div className="record-page__friend-list">
-                {friends.map((friend) => (
-                  <div
-                    key={friend.id}
-                    className={`record-page__friend-item ${
-                      friend.nickname === '나'
-                        ? 'record-page__friend-item--me'
-                        : ''
-                    }`}
-                  >
-                    <span
-                      className={`record-page__friend-rank ${
-                        friend.rank === 1
-                          ? 'record-page__friend-rank--first'
-                          : ''
-                      }`}
+                {friends.length > 0 ? (
+                  friends.map((friend, index) => (
+                    <div
+                      key={friend.friendId}
+                      className="record-page__friend-item"
                     >
-                      {friend.rank}
-                    </span>
+                      <span
+                        className={`record-page__friend-rank ${
+                          index === 0 ? 'record-page__friend-rank--first' : ''
+                        }`}
+                      >
+                        {index + 1}
+                      </span>
 
-                    <div className="record-page__friend-avatar" />
+                      <div className="record-page__friend-avatar" />
 
-                    <strong className="record-page__friend-name">
-                      {friend.nickname}
-                    </strong>
+                      <strong className="record-page__friend-name">
+                        {friend.nickname}
+                      </strong>
 
-                    <span className="record-page__friend-streak">
-                      {friend.streak}일 연속
-                    </span>
-                  </div>
-                ))}
+                      <span className="record-page__friend-streak">
+                        {friend.currentStreak}일 연속
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="record-page__empty">
+                    아직 연결된 친구가 없어요.
+                  </p>
+                )}
               </div>
             </section>
 

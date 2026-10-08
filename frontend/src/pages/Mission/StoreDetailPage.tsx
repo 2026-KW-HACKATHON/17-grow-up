@@ -1,71 +1,61 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { getPartners, type Partner } from '../../api/partnerApi'
+
 import './StoreDetailPage.css'
-
-interface Store {
-  id: number
-  name: string
-  category: '카페' | '음식점' | '마트' | '편의점'
-}
-
-const stores: Store[] = [
-  {
-    id: 1,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 2,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 3,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 4,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 5,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 6,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 7,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-  {
-    id: 8,
-    name: '텐퍼센트 커피 월계역점',
-    category: '카페',
-  },
-]
-
-const categories = ['전체', '카페', '음식점', '마트', '편의점'] as const
-
-type Category = (typeof categories)[number]
 
 function StoreDetailPage() {
   const navigate = useNavigate()
-  const [selectedCategory, setSelectedCategory] = useState<Category>('전체')
 
-  const filteredStores = useMemo(() => {
-    if (selectedCategory === '전체') {
-      return stores
+  const [partners, setPartners] = useState<Partner[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+
+        if (!accessToken) {
+          setError('로그인이 필요합니다.')
+          return
+        }
+
+        const data = await getPartners(accessToken)
+
+        setPartners(data)
+      } catch (error) {
+        console.error('제휴처 목록 조회 실패:', error)
+
+        setError('제휴처 목록을 불러오지 못했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    return stores.filter((store) => store.category === selectedCategory)
-  }, [selectedCategory])
+    fetchPartners()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="store-detail-page">
+        <main className="store-detail-page__content">
+          <p>제휴 매장을 불러오는 중...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="store-detail-page">
+        <main className="store-detail-page__content">
+          <p>{error}</p>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="store-detail-page">
@@ -83,38 +73,26 @@ function StoreDetailPage() {
           <h1>월계1동 제휴 매장</h1>
         </header>
 
-        <div className="store-detail-page__filters">
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              className={`store-detail-page__filter ${
-                selectedCategory === category
-                  ? 'store-detail-page__filter--active'
-                  : ''
-              }`}
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
         <section className="store-detail-page__list">
-          {filteredStores.map((store) => (
-            <button
-              key={store.id}
-              type="button"
-              className="store-detail-page__store"
-            >
-              <div className="store-detail-page__thumbnail" />
+          {partners.length > 0 ? (
+            partners.map((partner) => (
+              <button
+                key={partner.partnerId}
+                type="button"
+                className="store-detail-page__store"
+              >
+                <div className="store-detail-page__thumbnail" />
 
-              <div className="store-detail-page__store-info">
-                <strong>{store.name}</strong>
-                <span>{store.category}</span>
-              </div>
-            </button>
-          ))}
+                <div className="store-detail-page__store-info">
+                  <strong>{partner.partnerName}</strong>
+
+                  <span>제휴 매장</span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <p>등록된 제휴 매장이 없어요.</p>
+          )}
         </section>
       </main>
     </div>

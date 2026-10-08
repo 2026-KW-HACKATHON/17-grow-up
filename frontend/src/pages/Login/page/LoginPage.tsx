@@ -1,7 +1,8 @@
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { login } from '../../../api/loginApi'
+import { login, partnerLogin } from '../../../api/loginApi'
 import LoginButton from '../components/LoginButton'
 import LoginFooter from '../components/LoginFooter'
 import LoginInput from '../components/LoginInput'
@@ -13,9 +14,12 @@ function LoginPage() {
 
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
+  const [isPartnerLogin, setIsPartnerLogin] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async () => {
+    if (isLoading) return
+
     if (!loginId.trim() || !password) {
       alert('아이디 또는 이메일과 비밀번호를 입력해 주세요.')
       return
@@ -24,22 +28,44 @@ function LoginPage() {
     try {
       setIsLoading(true)
 
-      const data = await login({
-        loginId,
-        password,
-      })
+      if (isPartnerLogin) {
+        const partnerData = await partnerLogin({
+          loginId,
+          password,
+        })
 
-      localStorage.setItem('accessToken', data.accessToken)
+        localStorage.setItem('accessToken', partnerData.accessToken)
 
-      navigate('/signup/welcome', {
-        replace: true,
-        state: {
-          nickname: data.user.nickname,
-        },
-      })
+        navigate('/admin/mission', {
+          replace: true,
+        })
+      } else {
+        const data = await login({
+          loginId,
+          password,
+        })
+
+        localStorage.setItem('accessToken', data.accessToken)
+
+        navigate('/signup/welcome', {
+          replace: true,
+          state: {
+            nickname: data.user.nickname,
+          },
+        })
+      }
     } catch (error) {
-      if (error instanceof Error && error.message === 'INVALID_LOGIN') {
+      if (
+        error instanceof Error &&
+        (error.message === 'INVALID_LOGIN' ||
+          error.message === 'INVALID_PARTNER_LOGIN')
+      ) {
         alert('아이디 또는 이메일, 비밀번호를 확인해 주세요.')
+      } else if (
+        error instanceof Error &&
+        error.message === 'INACTIVE_PARTNER_ACCOUNT'
+      ) {
+        alert('비활성화된 제휴처 직원 계정입니다.')
       } else {
         alert('로그인에 실패했습니다.')
       }
@@ -78,6 +104,16 @@ function LoginPage() {
             value={password}
             onChange={setPassword}
           />
+
+          <label className="login-page__partner-login">
+            <input
+              type="checkbox"
+              checked={isPartnerLogin}
+              onChange={(e) => setIsPartnerLogin(e.target.checked)}
+              disabled={isLoading}
+            />
+            <span>직원 계정으로 로그인</span>
+          </label>
         </div>
 
         <div className="login-page__action">
