@@ -25,6 +25,10 @@ public enum ErrorCode {
     INVALID_QR_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않은 QR 코드입니다."),
     EXPIRED_QR_TOKEN(HttpStatus.BAD_REQUEST, "QR 토큰이 만료되었습니다."),
     MISSION_NOT_ALLOWED(HttpStatus.FORBIDDEN, "해당 제휴처에서 인증할 수 없는 미션입니다."),
+    MISSION_NOT_AVAILABLE_AT_PARTNER(
+            HttpStatus.FORBIDDEN,
+            "해당 제휴처에서 인증할 수 없는 미션입니다."
+    ),
 
     INSUFFICIENT_POINTS(HttpStatus.CONFLICT, "서울페이로 전환할 수 있는 포인트가 부족합니다."),
 
