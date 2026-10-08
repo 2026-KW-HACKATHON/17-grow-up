@@ -37,7 +37,7 @@ function PointHistoryItem({
 
       <div className="point-history-item__result">
         <span className="point-history-item__point">
-          +{point}P
+          +{point.toLocaleString('ko-KR')}P
         </span>
 
         <span className="point-history-item__time">
