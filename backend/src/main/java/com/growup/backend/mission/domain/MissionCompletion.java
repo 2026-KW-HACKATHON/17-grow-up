@@ -1,5 +1,6 @@
 package com.growup.backend.mission.domain;
 
+import com.growup.backend.partner.domain.Partner;
 import com.growup.backend.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,6 +44,10 @@ public class MissionCompletion {
     @JoinColumn(name = "mission_id", nullable = false)
     private Mission mission;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "partner_id")
+    private Partner partner;
+
     @Column(name = "completed_date", nullable = false)
     private LocalDate completedDate;
 
@@ -54,9 +59,19 @@ public class MissionCompletion {
             Mission mission,
             LocalDate completedDate
     ) {
+        return create(user, mission, null, completedDate);
+    }
+
+    public static MissionCompletion create(
+            User user,
+            Mission mission,
+            Partner partner,
+            LocalDate completedDate
+    ) {
         MissionCompletion completion = new MissionCompletion();
         completion.user = Objects.requireNonNull(user, "user는 필수입니다.");
         completion.mission = Objects.requireNonNull(mission, "mission은 필수입니다.");
+        completion.partner = partner;
         completion.completedDate = Objects.requireNonNull(
                 completedDate,
                 "completedDate는 필수입니다."

@@ -5,6 +5,7 @@ import com.growup.backend.global.security.AuthPrincipal;
 import com.growup.backend.point.dto.PointConversionListResponse;
 import com.growup.backend.point.dto.PointConversionRequest;
 import com.growup.backend.point.dto.PointConversionResponse;
+import com.growup.backend.point.dto.PointHistoryResponse;
 import com.growup.backend.point.service.PointService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/points/conversions")
+@RequestMapping("/api/v1/points")
 public class PointController {
 
     private final PointService pointService;
 
-    @PostMapping
+    @PostMapping("/conversions")
     public ApiResponse<PointConversionResponse> convert(
             @AuthenticationPrincipal AuthPrincipal principal,
             @Valid @RequestBody PointConversionRequest request
@@ -30,10 +31,17 @@ public class PointController {
         return ApiResponse.success(pointService.convert(principal.accountId(), request));
     }
 
-    @GetMapping
+    @GetMapping("/conversions")
     public ApiResponse<PointConversionListResponse> getConversions(
             @AuthenticationPrincipal AuthPrincipal principal
     ) {
         return ApiResponse.success(pointService.getConversions(principal.accountId()));
+    }
+
+    @GetMapping("/history")
+    public ApiResponse<PointHistoryResponse> getHistory(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ApiResponse.success(pointService.getHistory(principal.accountId()));
     }
 }

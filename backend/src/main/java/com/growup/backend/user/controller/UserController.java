@@ -6,6 +6,7 @@ import com.growup.backend.user.dto.ChangePasswordRequest;
 import com.growup.backend.user.dto.QrTokenResponse;
 import com.growup.backend.user.dto.UpdateNicknameRequest;
 import com.growup.backend.user.dto.UpdateNicknameResponse;
+import com.growup.backend.user.dto.UserGrowthResponse;
 import com.growup.backend.user.dto.UserMeResponse;
 import com.growup.backend.user.service.UserService;
 import jakarta.validation.Valid;
@@ -37,6 +38,13 @@ public class UserController {
             @AuthenticationPrincipal AuthPrincipal principal
     ) {
         return ApiResponse.success(userService.getMyInfo(principal.accountId()));
+    }
+
+    @GetMapping("/me/growth")
+    public ApiResponse<UserGrowthResponse> getMyGrowth(
+            @AuthenticationPrincipal AuthPrincipal principal
+    ) {
+        return ApiResponse.success(userService.getMyGrowth(principal.accountId()));
     }
 
     @PatchMapping("/me/nickname")

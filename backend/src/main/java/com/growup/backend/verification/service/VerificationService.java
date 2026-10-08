@@ -7,6 +7,8 @@ import com.growup.backend.mission.domain.Mission;
 import com.growup.backend.mission.domain.MissionCompletion;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.partner.domain.PartnerAccount;
+import com.growup.backend.partner.repository.PartnerAccountRepository;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import com.growup.backend.verification.dto.VerificationRequest;
@@ -41,6 +43,7 @@ public class VerificationService {
     private final UserRepository userRepository;
     private final MissionRepository missionRepository;
     private final MissionCompletionRepository missionCompletionRepository;
+    private final PartnerAccountRepository partnerAccountRepository;
 
     @Transactional
     public VerificationResponse verify(
@@ -57,6 +60,9 @@ public class VerificationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Mission mission = missionRepository.findByIdAndActiveTrue(request.missionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MISSION_NOT_FOUND));
+        PartnerAccount partnerAccount = partnerAccountRepository
+                .findById(authenticatedPartnerAccountId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PARTNER_NOT_FOUND));
         LocalDate today = LocalDate.now(KST_ZONE_ID);
 
         if (missionCompletionRepository.existsByUserIdAndMissionIdAndCompletedDate(
@@ -67,7 +73,12 @@ public class VerificationService {
             throw new BusinessException(ErrorCode.MISSION_ALREADY_COMPLETED);
         }
 
-        MissionCompletion completion = MissionCompletion.create(user, mission, today);
+        MissionCompletion completion = MissionCompletion.create(
+                user,
+                mission,
+                partnerAccount.getPartner(),
+                today
+        );
         try {
             MissionCompletion savedCompletion = missionCompletionRepository.saveAndFlush(
                     completion

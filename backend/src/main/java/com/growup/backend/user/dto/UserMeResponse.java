@@ -1,5 +1,6 @@
 package com.growup.backend.user.dto;
 
+import com.growup.backend.user.domain.CharacterGrowthPolicy;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 
@@ -17,17 +18,13 @@ public record UserMeResponse(
         int longestStreak
 ) {
 
-    private static final long LEVEL_2_MIN_CARBON_G = 1_610L;
-    private static final long LEVEL_3_MIN_CARBON_G = 6_900L;
-    private static final long LEVEL_4_MIN_CARBON_G = 20_700L;
-
     public static UserMeResponse from(User user) {
         return new UserMeResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickname(),
                 user.getCharacterType(),
-                calculateCharacterLevel(user.getTotalCarbonG()),
+                CharacterGrowthPolicy.calculate(user.getTotalCarbonG()).level(),
                 user.getTotalCarbonG(),
                 user.getConvertibleCarbonG(),
                 user.getAvailablePoints(),
@@ -37,16 +34,4 @@ public record UserMeResponse(
         );
     }
 
-    private static int calculateCharacterLevel(long totalCarbonG) {
-        if (totalCarbonG >= LEVEL_4_MIN_CARBON_G) {
-            return 4;
-        }
-        if (totalCarbonG >= LEVEL_3_MIN_CARBON_G) {
-            return 3;
-        }
-        if (totalCarbonG >= LEVEL_2_MIN_CARBON_G) {
-            return 2;
-        }
-        return 1;
-    }
 }

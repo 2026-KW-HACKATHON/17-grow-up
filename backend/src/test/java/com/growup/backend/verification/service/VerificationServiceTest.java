@@ -13,6 +13,9 @@ import com.growup.backend.mission.domain.Mission;
 import com.growup.backend.mission.domain.MissionCategory;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.partner.domain.Partner;
+import com.growup.backend.partner.domain.PartnerAccount;
+import com.growup.backend.partner.repository.PartnerAccountRepository;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
@@ -42,11 +45,15 @@ class VerificationServiceTest {
     @Mock
     private MissionCompletionRepository missionCompletionRepository;
 
+    @Mock
+    private PartnerAccountRepository partnerAccountRepository;
+
     @InjectMocks
     private VerificationService verificationService;
 
     private User user;
     private Mission mission;
+    private PartnerAccount partnerAccount;
     private VerificationRequest request;
 
     @BeforeEach
@@ -65,6 +72,13 @@ class VerificationServiceTest {
                 230L,
                 500L,
                 true
+        );
+        Partner partner = Partner.create("그루업 테스트 카페");
+        partnerAccount = PartnerAccount.create(
+                "partner",
+                "hashed-password",
+                true,
+                partner
         );
         request = new VerificationRequest("qr-token", 1L);
     }
@@ -105,6 +119,7 @@ class VerificationServiceTest {
         when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(user));
         when(missionRepository.findByIdAndActiveTrue(request.missionId()))
                 .thenReturn(Optional.of(mission));
+        when(partnerAccountRepository.findById(10L)).thenReturn(Optional.of(partnerAccount));
         when(missionCompletionRepository.existsByUserIdAndMissionIdAndCompletedDate(
                 any(),
                 any(),
