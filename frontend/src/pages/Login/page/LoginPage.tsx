@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,7 +14,9 @@ function LoginPage() {
 
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
+  const [isPartnerLogin, setIsPartnerLogin] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
   const handleLogin = async () => {
     if (isLoading) return
 
@@ -25,7 +28,18 @@ function LoginPage() {
     try {
       setIsLoading(true)
 
-      try {
+      if (isPartnerLogin) {
+        const partnerData = await partnerLogin({
+          loginId,
+          password,
+        })
+
+        localStorage.setItem('accessToken', partnerData.accessToken)
+
+        navigate('/admin/mission', {
+          replace: true,
+        })
+      } else {
         const data = await login({
           loginId,
           password,
@@ -39,24 +53,7 @@ function LoginPage() {
             nickname: data.user.nickname,
           },
         })
-
-        return
-      } catch (error) {
-        if (!(error instanceof Error) || error.message !== 'INVALID_LOGIN') {
-          throw error
-        }
       }
-
-      const partnerData = await partnerLogin({
-        loginId,
-        password,
-      })
-
-      localStorage.setItem('accessToken', partnerData.accessToken)
-
-      navigate('/admin/mission', {
-        replace: true,
-      })
     } catch (error) {
       if (
         error instanceof Error &&
@@ -107,6 +104,16 @@ function LoginPage() {
             value={password}
             onChange={setPassword}
           />
+
+          <label className="login-page__partner-login">
+            <input
+              type="checkbox"
+              checked={isPartnerLogin}
+              onChange={(e) => setIsPartnerLogin(e.target.checked)}
+              disabled={isLoading}
+            />
+            <span>직원 계정으로 로그인</span>
+          </label>
         </div>
 
         <div className="login-page__action">
