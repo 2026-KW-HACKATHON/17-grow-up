@@ -1,80 +1,28 @@
+
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getPointConversions, type PointConversion } from '../../../api/pointApi'
-import { getMyInfo } from '../../../api/userApi'
+import {
+  getPointConversions,
+  getPointHistory,
+  type PointConversion,
+  type PointHistory,
+} from '../../../api/pointApi'
 import BottomNav from '../../../components/BottomNav/BottomNav'
 import PointHistoryItem from '../components/PointHistoryItem'
 import PointTabs, { type PointTabType } from '../components/PointTabs'
 import './PointPage.css'
 
-interface PointHistory {
-  id: number
-  icon: string
-  title: string
-  place: string
-  point: number
-  time: string
-}
+function formatHistoryTime(earnedAt: string) {
+  const date = new Date(earnedAt)
 
-const pointHistory: PointHistory[] = [
-  {
-    id: 1,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 2,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 3,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 4,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 5,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 6,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-  {
-    id: 7,
-    icon: '/tumbler.svg',
-    title: '텀블러 사용하기',
-    place: '월계동 그린커피',
-    point: 50,
-    time: '오늘 14:32',
-  },
-]
+  return date.toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 function formatConversionTime(createdAt: string) {
   const date = new Date(createdAt)
@@ -90,24 +38,34 @@ function formatConversionTime(createdAt: string) {
 function PointPage() {
   const [activeTab, setActiveTab] = useState<PointTabType>('earn')
   const [availablePoints, setAvailablePoints] = useState(0)
-  const [totalEarnedPoints, setTotalEarnedPoints] = useState(0)
+  const [monthlyEarnedPoints, setMonthlyEarnedPoints] = useState(0)
+  const [pointHistories, setPointHistories] = useState<PointHistory[]>([])
   const [conversions, setConversions] = useState<PointConversion[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchPointData = async () => {
       try {
-        const [userData, conversionData] = await Promise.all([
-          getMyInfo(),
+        setIsLoading(true)
+        setHasError(false)
+
+        const [historyData, conversionData] = await Promise.all([
+          getPointHistory(),
           getPointConversions(),
         ])
 
-        setAvailablePoints(userData.availablePoints)
-        setTotalEarnedPoints(userData.totalEarnedPoints)
+        setAvailablePoints(historyData.availablePoints)
+        setMonthlyEarnedPoints(historyData.monthlyEarnedPoints)
+        setPointHistories(historyData.histories)
         setConversions(conversionData.conversions)
       } catch (error) {
         console.error('포인트 정보 조회 실패:', error)
+        setHasError(true)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -127,10 +85,7 @@ function PointPage() {
           >
             <span>서울페이 전환</span>
 
-            <img
-              src="/chevron-right.svg"
-              alt=""
-            />
+            <img src="/chevron-right.svg" alt="" />
           </button>
         </header>
 
@@ -146,28 +101,37 @@ function PointPage() {
           </div>
 
           <p className="point-page__monthly">
-            지금까지{' '}
-            <span>+{totalEarnedPoints.toLocaleString()}P</span>를 모았어요!
+            이번 달{' '}
+            <span>+{monthlyEarnedPoints.toLocaleString()}P</span>를 모았어요!
           </p>
         </section>
 
-        <PointTabs
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
+        <PointTabs activeTab={activeTab} onChange={setActiveTab} />
 
         <section className="point-page__history">
-          {activeTab === 'earn' ? (
-            pointHistory.map((history) => (
-              <PointHistoryItem
-                key={history.id}
-                icon={history.icon}
-                title={history.title}
-                place={history.place}
-                point={history.point}
-                time={history.time}
-              />
-            ))
+          {isLoading ? (
+            <div className="point-page__empty">불러오는 중...</div>
+          ) : hasError ? (
+            <div className="point-page__empty">
+              포인트 내역을 불러오지 못했습니다.
+            </div>
+          ) : activeTab === 'earn' ? (
+            pointHistories.length > 0 ? (
+              pointHistories.map((history, index) => (
+                <PointHistoryItem
+                  key={`${history.missionId}-${history.earnedAt}-${index}`}
+                  icon="/tumbler.svg"
+                  title={history.missionName}
+                  place={history.partnerName}
+                  point={history.earnedPoints}
+                  time={formatHistoryTime(history.earnedAt)}
+                />
+              ))
+            ) : (
+              <div className="point-page__empty">
+                적립 내역이 없습니다.
+              </div>
+            )
           ) : conversions.length > 0 ? (
             conversions.map((conversion) => (
               <PointHistoryItem
