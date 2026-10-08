@@ -1,3 +1,4 @@
+
 .login-page {
   position: relative;
 
@@ -44,6 +45,32 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.login-page__partner-login {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 8px;
+  cursor: pointer;
+
+  color: #666666;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.login-page__partner-login input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+
+  accent-color: #39965c;
+  cursor: pointer;
+}
+
+.login-page__partner-login input[type='checkbox']:disabled {
+  cursor: not-allowed;
 }
 
 .login-page__action {
