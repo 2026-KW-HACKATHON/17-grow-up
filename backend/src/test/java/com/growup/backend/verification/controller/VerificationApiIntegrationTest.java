@@ -15,7 +15,9 @@ import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
 import com.growup.backend.partner.domain.Partner;
 import com.growup.backend.partner.domain.PartnerAccount;
+import com.growup.backend.partner.domain.PartnerMission;
 import com.growup.backend.partner.repository.PartnerAccountRepository;
+import com.growup.backend.partner.repository.PartnerMissionRepository;
 import com.growup.backend.partner.repository.PartnerRepository;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
@@ -65,6 +67,9 @@ class VerificationApiIntegrationTest {
 
     @Autowired
     private PartnerAccountRepository partnerAccountRepository;
+
+    @Autowired
+    private PartnerMissionRepository partnerMissionRepository;
 
     private PartnerAccount partnerAccount;
 
@@ -124,6 +129,10 @@ class VerificationApiIntegrationTest {
                 .isEqualTo(partnerAccount.getPartner().getId());
         assertThat(completion.getPartner().getName()).isEqualTo("그루업 테스트 카페");
         assertThat(completion.getCompletedDate()).isEqualTo(responseDate);
+        assertThat(partnerMissionRepository.existsByPartnerIdAndMissionId(
+                partnerAccount.getPartner().getId(),
+                mission.getId()
+        )).isTrue();
 
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updatedUser.getTotalCarbonG()).isEqualTo(230L);
@@ -279,6 +288,32 @@ class VerificationApiIntegrationTest {
     }
 
     @Test
+    void missionNotMappedToPartnerReturnsForbidden() throws Exception {
+        User user = saveUser();
+        Mission mission = saveMissionWithoutPartnerMapping();
+
+        mockMvc.perform(post("/api/v1/verifications")
+                        .header(HttpHeaders.AUTHORIZATION, partnerBearerToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(verificationBody(
+                                jwtTokenProvider.createQrToken(user.getId()),
+                                mission.getId()
+                        )))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code")
+                        .value("MISSION_NOT_AVAILABLE_AT_PARTNER"))
+                .andExpect(jsonPath("$.error.message")
+                        .value("해당 제휴처에서 인증할 수 없는 미션입니다."));
+
+        assertThat(missionCompletionRepository.count()).isZero();
+        User unchangedUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(unchangedUser.getTotalCarbonG()).isZero();
+        assertThat(unchangedUser.getAvailablePoints()).isZero();
+        assertThat(unchangedUser.getCurrentStreak()).isZero();
+    }
+
+    @Test
     void userRoleCannotCallVerification() throws Exception {
         mockMvc.perform(post("/api/v1/verifications")
                         .header(HttpHeaders.AUTHORIZATION, userBearerToken())
@@ -339,13 +374,29 @@ class VerificationApiIntegrationTest {
             long rewardPoints,
             boolean active
     ) {
-        return missionRepository.saveAndFlush(Mission.create(
+        Mission mission = missionRepository.saveAndFlush(Mission.create(
                 name,
                 name + " 미션 설명",
                 MissionCategory.REUSABLE,
                 carbonReductionG,
                 rewardPoints,
                 active
+        ));
+        partnerMissionRepository.saveAndFlush(PartnerMission.create(
+                partnerAccount.getPartner(),
+                mission
+        ));
+        return mission;
+    }
+
+    private Mission saveMissionWithoutPartnerMapping() {
+        return missionRepository.saveAndFlush(Mission.create(
+                "매핑되지 않은 미션",
+                "매핑되지 않은 미션 설명",
+                MissionCategory.REUSABLE,
+                100L,
+                100L,
+                true
         ));
     }
 
@@ -369,6 +420,7 @@ class VerificationApiIntegrationTest {
 
     private void cleanDatabase() {
         missionCompletionRepository.deleteAll();
+        partnerMissionRepository.deleteAll();
         partnerAccountRepository.deleteAll();
         partnerRepository.deleteAll();
         missionRepository.deleteAll();
