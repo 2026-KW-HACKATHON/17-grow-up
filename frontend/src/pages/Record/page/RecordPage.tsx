@@ -399,8 +399,13 @@ function RecordPage() {
                         {index + 1}
                       </span>
 
-                      <div className="record-page__friend-avatar" />
-
+                      <div className="record-page__friend-avatar">
+                        <img
+                          src="/profile-character.svg"
+                          alt=""
+                          className="record-page__friend-avatar-image"
+                        />
+                      </div>
                       <strong className="record-page__friend-name">
                         {friend.nickname}
                       </strong>
