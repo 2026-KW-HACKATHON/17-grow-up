@@ -7,8 +7,10 @@ import com.growup.backend.mission.domain.Mission;
 import com.growup.backend.mission.domain.MissionCompletion;
 import com.growup.backend.mission.repository.MissionCompletionRepository;
 import com.growup.backend.mission.repository.MissionRepository;
+import com.growup.backend.partner.domain.Partner;
 import com.growup.backend.partner.domain.PartnerAccount;
 import com.growup.backend.partner.repository.PartnerAccountRepository;
+import com.growup.backend.partner.repository.PartnerMissionRepository;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import com.growup.backend.verification.dto.VerificationRequest;
@@ -44,6 +46,7 @@ public class VerificationService {
     private final MissionRepository missionRepository;
     private final MissionCompletionRepository missionCompletionRepository;
     private final PartnerAccountRepository partnerAccountRepository;
+    private final PartnerMissionRepository partnerMissionRepository;
 
     @Transactional
     public VerificationResponse verify(
@@ -63,6 +66,13 @@ public class VerificationService {
         PartnerAccount partnerAccount = partnerAccountRepository
                 .findById(authenticatedPartnerAccountId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PARTNER_NOT_FOUND));
+        Partner partner = partnerAccount.getPartner();
+        if (!partnerMissionRepository.existsByPartnerIdAndMissionId(
+                partner.getId(),
+                mission.getId()
+        )) {
+            throw new BusinessException(ErrorCode.MISSION_NOT_AVAILABLE_AT_PARTNER);
+        }
         LocalDate today = LocalDate.now(KST_ZONE_ID);
 
         if (missionCompletionRepository.existsByUserIdAndMissionIdAndCompletedDate(
@@ -76,7 +86,7 @@ public class VerificationService {
         MissionCompletion completion = MissionCompletion.create(
                 user,
                 mission,
-                partnerAccount.getPartner(),
+                partner,
                 today
         );
         try {

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.growup.backend.global.exception.BusinessException;
@@ -16,6 +17,7 @@ import com.growup.backend.mission.repository.MissionRepository;
 import com.growup.backend.partner.domain.Partner;
 import com.growup.backend.partner.domain.PartnerAccount;
 import com.growup.backend.partner.repository.PartnerAccountRepository;
+import com.growup.backend.partner.repository.PartnerMissionRepository;
 import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
@@ -29,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class VerificationServiceTest {
@@ -47,6 +50,9 @@ class VerificationServiceTest {
 
     @Mock
     private PartnerAccountRepository partnerAccountRepository;
+
+    @Mock
+    private PartnerMissionRepository partnerMissionRepository;
 
     @InjectMocks
     private VerificationService verificationService;
@@ -73,7 +79,9 @@ class VerificationServiceTest {
                 500L,
                 true
         );
+        ReflectionTestUtils.setField(mission, "id", 1L);
         Partner partner = Partner.create("그루업 테스트 카페");
+        ReflectionTestUtils.setField(partner, "id", 2L);
         partnerAccount = PartnerAccount.create(
                 "partner",
                 "hashed-password",
@@ -81,6 +89,22 @@ class VerificationServiceTest {
                 partner
         );
         request = new VerificationRequest("qr-token", 1L);
+    }
+
+    @Test
+    void rejectsMissionNotMappedToPartner() {
+        prepareLookupBeforePartnerMissionCheck();
+        when(partnerMissionRepository.existsByPartnerIdAndMissionId(2L, 1L))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> verificationService.verify(10L, request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.MISSION_NOT_AVAILABLE_AT_PARTNER);
+        verifyNoInteractions(missionCompletionRepository);
+        assertThat(user.getTotalCarbonG()).isZero();
+        assertThat(user.getAvailablePoints()).isZero();
+        assertThat(user.getCurrentStreak()).isZero();
     }
 
     @Test
@@ -115,16 +139,22 @@ class VerificationServiceTest {
     }
 
     private void prepareSuccessfulLookup() {
-        when(jwtTokenProvider.getQrAccountId(request.qrToken())).thenReturn(1L);
-        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(user));
-        when(missionRepository.findByIdAndActiveTrue(request.missionId()))
-                .thenReturn(Optional.of(mission));
-        when(partnerAccountRepository.findById(10L)).thenReturn(Optional.of(partnerAccount));
+        prepareLookupBeforePartnerMissionCheck();
+        when(partnerMissionRepository.existsByPartnerIdAndMissionId(2L, 1L))
+                .thenReturn(true);
         when(missionCompletionRepository.existsByUserIdAndMissionIdAndCompletedDate(
                 any(),
                 any(),
                 any()
         )).thenReturn(false);
+    }
+
+    private void prepareLookupBeforePartnerMissionCheck() {
+        when(jwtTokenProvider.getQrAccountId(request.qrToken())).thenReturn(1L);
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(user));
+        when(missionRepository.findByIdAndActiveTrue(request.missionId()))
+                .thenReturn(Optional.of(mission));
+        when(partnerAccountRepository.findById(10L)).thenReturn(Optional.of(partnerAccount));
     }
 
     private DataIntegrityViolationException databaseExceptionWithConstraint(
