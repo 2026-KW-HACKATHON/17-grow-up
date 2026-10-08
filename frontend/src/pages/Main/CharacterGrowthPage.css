@@ -21,7 +21,6 @@
   height: 260px;
 
   overflow: hidden;
-
   background: #ffffff;
 }
 
@@ -33,7 +32,6 @@
   height: 100%;
 
   display: block;
-
   object-fit: cover;
   object-position: center;
 
@@ -84,15 +82,12 @@
 
 .growth-page__sheet {
   position: relative;
-
   z-index: 2;
 
   margin-top: -22px;
-
   padding: 18px 26px 32px;
 
   border-radius: 24px 24px 0 0;
-
   background: #ffffff;
 
   box-sizing: border-box;
@@ -102,13 +97,11 @@
   width: fit-content;
 
   margin: 0 auto 7px;
-
   padding: 4px 10px;
 
   border-radius: 999px;
 
   background: #edf4ef;
-
   color: #333333;
 
   font-size: 11px;
@@ -128,7 +121,6 @@
   margin: 5px 0 0;
 
   text-align: center;
-
   color: #000000;
 
   font-size: 12px;
@@ -149,7 +141,6 @@
   display: grid;
   grid-template-columns: 42px 1fr 42px;
   align-items: center;
-
   gap: 8px;
 }
 
@@ -170,7 +161,6 @@
   height: 14px;
 
   border-radius: 999px;
-
   background: #dedede;
 
   overflow: visible;
@@ -180,7 +170,6 @@
   height: 100%;
 
   border-radius: 999px;
-
   background: #298249;
 }
 
@@ -188,13 +177,11 @@
   position: absolute;
 
   top: 50%;
-
   transform: translate(30%, -57%);
 
   color: #ffffff;
 
   font-size: 9px;
-
   z-index: 2;
 }
 
@@ -202,7 +189,6 @@
 
 .growth-page__sprout {
   position: absolute;
-
   bottom: 8px;
 
   width: 22px;
@@ -218,13 +204,11 @@
   margin: 8px 0 0 50px;
 
   color: #777777;
-
   font-size: 12px;
 }
 
 .growth-page__progress-section > p strong {
   color: #555555;
-
   font-weight: 700;
 }
 
@@ -237,7 +221,6 @@
 .growth-page__status h2 {
   display: flex;
   align-items: center;
-
   gap: 8px;
 
   margin: 0 0 24px;
@@ -246,8 +229,6 @@
   font-weight: 800;
 }
 
-/* 미션별 실천 현황 앞 탄소 아이콘 */
-
 .growth-page__status-icon {
   width: 24px;
   height: 24px;
@@ -255,7 +236,6 @@
   flex-shrink: 0;
 
   display: block;
-
   object-fit: contain;
 }
 
@@ -263,11 +243,10 @@
   display: grid;
   grid-template-columns: 150px 1fr;
   align-items: center;
-
   gap: 18px;
 }
 
-/* DONUT */
+/* DONUT CHART */
 
 .growth-page__chart {
   position: relative;
@@ -276,7 +255,6 @@
   height: 145px;
 
   flex-shrink: 0;
-
   border-radius: 50%;
 }
 
@@ -292,7 +270,6 @@
   line-height: 1;
 
   z-index: 3;
-
   pointer-events: none;
 }
 
@@ -307,7 +284,6 @@
   justify-content: center;
 
   border-radius: 50%;
-
   background: #ffffff;
 
   z-index: 2;
@@ -329,7 +305,6 @@
 .growth-page__legend {
   display: flex;
   flex-direction: column;
-
   gap: 10px;
 }
 
@@ -337,14 +312,12 @@
   display: grid;
   grid-template-columns: 9px 1fr auto;
   align-items: center;
-
   gap: 6px;
 }
 
 .growth-page__dot {
   width: 8px;
   height: 8px;
-
   border-radius: 50%;
 }
 
@@ -382,7 +355,6 @@
   margin-top: 1px;
 
   color: #000000;
-
   font-size: 8px;
 }
 
@@ -394,65 +366,33 @@
   font-style: normal;
 }
 
-/* RECOMMEND */
+/* 하단 안내 문구 */
 
 .growth-page__recommend {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 74px;
 
   margin-top: 28px;
+  padding: 20px 16px;
 
-  padding: 14px 16px;
+  box-sizing: border-box;
 
   border-radius: 13px;
-
   background: #edf6ef;
 }
 
-.growth-page__recommend-text {
-  min-width: 0;
+.growth-page__recommend p {
+  margin: 0;
 
-  display: flex;
-  flex-direction: column;
-}
+  color: #24572e;
 
-.growth-page__recommend-text > span {
-  color: #000000;
-
-  font-size: 8px;
-}
-
-.growth-page__recommend-text strong {
-  margin-top: 3px;
-
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.growth-page__recommend-text p {
-  margin: 4px 0 0;
-
-  color: #000000;
-
-  font-size: 10px;
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
   font-weight: 700;
-}
-
-.growth-page__recommend-image {
-  width: 48px;
-  height: 48px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.growth-page__recommend-image img {
-  width: 46px;
-  height: 46px;
-
-  object-fit: contain;
+  line-height: 1.4;
+  text-align: center;
 }

@@ -1,59 +1,64 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import BottomNav from '../../components/BottomNav/BottomNav'
-
 import { getHome, type HomeData } from '../../api/homeApi'
-
-import { getMissions, type Mission } from '../../api/missionApi'
+import { missions as missionDesignData } from '../Mission/data/missionData'
 
 import './MainPage.css'
 
 const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일']
 
-const missionDisplayMap: Record<
-  string,
-  {
-    title: string
-    category: string
-    image: string
-    backgroundColor: string
+function formatCarbon(carbonG: number) {
+  if (carbonG >= 1000) {
+    return {
+      value: Number((carbonG / 1000).toFixed(1)),
+      unit: 'kg CO₂e',
+    }
   }
-> = {
-  '텀블러 사용하기': {
-    title: '텀블러 사용하기',
-    category: '카페',
-    image: '/tumbler.svg',
-    backgroundColor: '#E9F4EC',
-  },
 
-  '장바구니 사용하기': {
-    title: '장바구니 사용하기',
-    category: '마트·편의점',
-    image: '/shopping-bag.svg',
-    backgroundColor: '#FFF5E0',
-  },
+  return {
+    value: carbonG,
+    unit: 'g CO₂e',
+  }
+}
 
-  '포장 시 다회용기 사용하기': {
-    title: '포장 시 다회용기 사용하기',
-    category: '음식점',
-    image: '/container.svg',
-    backgroundColor: '#EDF3FC',
-  },
+// 백엔드의 시간대 없는 날짜 문자열은 한국 시간으로 해석
+function formatCompletedAt(completedAt: string) {
+  const datePart = completedAt.slice(0, 10)
 
-  '음식 안 남기기': {
-    title: '음식 남기지 않기',
-    category: '음식점',
-    image: '/empty-plate.svg',
-    backgroundColor: '#FCE8E5',
-  },
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
 
-  '일회용 수저·포크 사용 안 하기': {
-    title: '일회용 수저·빨대 받지 않기',
-    category: '카페·음식점',
-    image: '/no-disposable.svg',
-    backgroundColor: '#DFE5FB',
-  },
+  const date = new Date(
+    /(?:Z|[+-]\d{2}:\d{2})$/.test(completedAt)
+      ? completedAt
+      : `${completedAt}+09:00`,
+  )
+
+  if (Number.isNaN(date.getTime())) return '-'
+
+  const time = date.toLocaleTimeString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+  if (datePart === today) {
+    return `오늘 ${time}`
+  }
+
+  return date.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function MainPage() {
@@ -61,126 +66,85 @@ function MainPage() {
 
   const [homeData, setHomeData] = useState<HomeData | null>(null)
 
-  const [missionData, setMissionData] = useState<Mission[]>([])
+  const [randomMissionIds, setRandomMissionIds] = useState<number[]>([])
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchMainData = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken')
 
         if (!accessToken) {
-          setError('로그인이 필요합니다.')
+          if (!cancelled) {
+            setError('로그인이 필요합니다.')
+          }
           return
         }
 
-        const [home, missions] = await Promise.all([
-          getHome(accessToken),
-          getMissions(accessToken),
-        ])
+        const data = await getHome(accessToken)
 
-        setHomeData(home)
-        setMissionData(missions)
+        if (cancelled) return
+
+        setHomeData(data)
+
+        // 새로고침할 때 미션 2개 랜덤 선택
+        const shuffled = [...(data.todayMissions ?? [])]
+
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
+
+        setRandomMissionIds(
+          shuffled.slice(0, 2).map((mission) => mission.missionId),
+        )
       } catch (error) {
-        console.error('홈 화면 조회 실패:', error)
-
-        setError('홈 정보를 불러오지 못했습니다.')
+        if (!cancelled) {
+          console.error('홈 정보 조회 실패:', error)
+          setError('홈 정보를 불러오지 못했습니다.')
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
-    fetchMainData()
+    void fetchMainData()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  const weekdays = useMemo(() => {
-    const practiceDates = new Set(homeData?.weeklyPracticeDays ?? [])
+  const todayMissions = randomMissionIds.flatMap((id) => {
+    const mission = homeData?.todayMissions?.find(
+      (item) => item.missionId === id,
+    )
 
-    const today = new Date()
+    return mission ? [mission] : []
+  })
 
-    const currentDay = today.getDay()
+  const weeklyPractices = homeData?.streak?.weeklyPractices ?? []
 
-    // 일요일: 0
-    // 월요일부터 시작하도록 계산
-    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+  const weeklyPracticeCount = weeklyPractices.filter(
+    (day) => day.completed,
+  ).length
 
-    const monday = new Date(today)
-
-    monday.setHours(0, 0, 0, 0)
-    monday.setDate(today.getDate() + mondayOffset)
-
-    return weekdayLabels.map((label, index) => {
-      const date = new Date(monday)
-
-      date.setDate(monday.getDate() + index)
-
-      const year = date.getFullYear()
-
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-
-      const day = String(date.getDate()).padStart(2, '0')
-
-      const dateString = `${year}-${month}-${day}`
-
-      return {
-        label,
-        completed: practiceDates.has(dateString),
-      }
-    })
-  }, [homeData?.weeklyPracticeDays])
-
-  const todayMissions = useMemo(() => {
-    return homeData?.todayMissions.slice(0, 2) ?? []
-  }, [homeData?.todayMissions])
-
-  const weeklyPracticeCount = homeData?.weeklyPracticeDays.length ?? 0
-
-  const formatCarbon = (carbonG: number) => {
-    if (carbonG >= 1000) {
-      const kg = carbonG / 1000
-
-      return {
-        value: Number(kg.toFixed(1)),
-        unit: 'kg CO₂e',
-      }
-    }
-
-    return {
-      value: carbonG,
-      unit: 'g CO₂e',
-    }
-  }
-
-  const formatCompletedAt = (completedAt: string) => {
-    const date = new Date(completedAt)
-
-    const today = new Date()
-
-    const isToday =
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-
-    const time = date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-
-    if (isToday) {
-      return `오늘 ${time}`
-    }
-
-    return date.toLocaleString('ko-KR', {
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
+  const currentStreak = homeData?.streak?.currentStreak ?? 0
 
   const carbon = formatCarbon(homeData?.totalCarbonG ?? 0)
+
+  // 실제 홈 API의 progressPercent는 0~100 범위
+  const progressPercent = Math.min(
+    100,
+    Math.max(0, homeData?.characterGrowth?.progressPercent ?? 0),
+  )
 
   if (isLoading) {
     return (
@@ -188,7 +152,6 @@ function MainPage() {
         <main className="main-page__content">
           <p>홈 정보를 불러오는 중...</p>
         </main>
-
         <BottomNav active="home" />
       </div>
     )
@@ -200,7 +163,6 @@ function MainPage() {
         <main className="main-page__content">
           <p>{error || '홈 정보를 불러오지 못했습니다.'}</p>
         </main>
-
         <BottomNav active="home" />
       </div>
     )
@@ -209,6 +171,7 @@ function MainPage() {
   return (
     <div className="main-page">
       <main className="main-page__content">
+        {/* 상단 헤더 */}
         <header className="main-page__header">
           <div className="main-page__brand">
             <img
@@ -231,7 +194,7 @@ function MainPage() {
               onClick={() => navigate('/alarm')}
               aria-label="알림창으로 이동"
             >
-              <img src="/alarm-icon.svg" alt="알림" />
+              <img src="/alarm-icon.svg" alt="" />
             </button>
 
             <button
@@ -245,6 +208,7 @@ function MainPage() {
           </div>
         </header>
 
+        {/* 캐릭터 성장 카드 */}
         <section className="main-page__growth-card">
           <img
             className="main-page__growth-background"
@@ -254,7 +218,7 @@ function MainPage() {
 
           <div className="main-page__growth-text">
             <span className="main-page__level">
-              Lv. {homeData.character.characterLevel}
+              Lv. {homeData.characterGrowth.level}
             </span>
 
             <h1>
@@ -273,7 +237,7 @@ function MainPage() {
                   <div
                     className="main-page__progress-value"
                     style={{
-                      width: '0%',
+                      width: `${progressPercent}%`,
                     }}
                   />
                 </div>
@@ -286,6 +250,7 @@ function MainPage() {
           </div>
         </section>
 
+        {/* 포인트 및 탄소 감축량 */}
         <section className="main-page__summary">
           <button
             type="button"
@@ -296,7 +261,6 @@ function MainPage() {
 
             <div>
               <span>보유 포인트</span>
-
               <strong>{homeData.availablePoints.toLocaleString()} P</strong>
             </div>
 
@@ -312,7 +276,6 @@ function MainPage() {
 
             <div>
               <span>누적 탄소 감축량</span>
-
               <strong>
                 {carbon.value} <small>{carbon.unit}</small>
               </strong>
@@ -322,13 +285,20 @@ function MainPage() {
           </button>
         </section>
 
+        {/* 연속 실천 및 이번 주 현황 */}
         <section className="main-page__streak-card">
           <div className="main-page__streak-header">
-            <div>
+            <div className="main-page__streak-title">
               <span className="main-page__fire">🔥</span>
 
               <strong>
-                <em>{homeData.currentStreak}일</em> 연속 실천 중이에요!
+                {currentStreak > 0 ? (
+                  <>
+                    <em>{currentStreak}일</em> 연속 실천 중이에요!
+                  </>
+                ) : (
+                  '오늘 첫 실천을 시작해 보세요!'
+                )}
               </strong>
             </div>
 
@@ -339,40 +309,45 @@ function MainPage() {
           </div>
 
           <div className="main-page__week">
-            {weekdays.map((day) => (
-              <div key={day.label} className="main-page__weekday">
-                <span>{day.label}</span>
+            {weekdayLabels.map((label, index) => {
+              const practice = weeklyPractices[index]
 
-                <div
-                  className={`main-page__day-check ${
-                    day.completed ? 'main-page__day-check--completed' : ''
-                  }`}
-                >
-                  {day.completed ? '✓' : ''}
+              return (
+                <div key={label} className="main-page__weekday">
+                  <span>{label}</span>
+
+                  <div
+                    className={`main-page__day-check ${
+                      practice?.completed
+                        ? 'main-page__day-check--completed'
+                        : ''
+                    }`}
+                  >
+                    {practice?.completed ? '✓' : ''}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
+        {/* 오늘의 미션 */}
         <section className="main-page__section">
           <div className="main-page__section-header">
             <h2>오늘의 미션</h2>
 
             <button type="button" onClick={() => navigate('/mission')}>
-              전체 보기
-              <span>›</span>
+              전체 보기 <span>›</span>
             </button>
           </div>
 
           <div className="main-page__mission-list">
             {todayMissions.length > 0 ? (
               todayMissions.map((mission, index) => {
-                const apiMission = missionData.find(
+                // SVG, 색상, 한글 명칭은 디자인 데이터에서 가져옴
+                const display = missionDesignData.find(
                   (item) => item.missionId === mission.missionId,
                 )
-
-                const display = missionDisplayMap[mission.name]
 
                 return (
                   <button
@@ -391,17 +366,19 @@ function MainPage() {
                     <div className="main-page__mission-image">
                       <div className="main-page__mission-shadow" />
 
-                      <img src={display?.image ?? '/tumbler.svg'} alt="" />
+                      <img
+                        src={display?.image ?? '/profile-character.svg'}
+                        alt=""
+                      />
                     </div>
 
                     <div className="main-page__mission-text">
                       <div className="main-page__mission-title-row">
-                        <strong>{display?.title ?? mission.name}</strong>
+                        <strong>{display?.title ?? mission.missionName}</strong>
 
                         <span className="main-page__mission-point">
                           <img src="/point-coin.svg" alt="" />
-
-                          {apiMission?.rewardPoints ?? 0}
+                          {mission.rewardPoints.toLocaleString()}
                         </span>
                       </div>
 
@@ -415,25 +392,29 @@ function MainPage() {
                 )
               })
             ) : (
-              <p>오늘 수행 가능한 미션이 없어요.</p>
+              <p className="main-page__empty">
+                오늘 수행 가능한 미션이 없어요.
+              </p>
             )}
           </div>
         </section>
 
+        {/* 최근 활동 */}
         <section className="main-page__section">
           <div className="main-page__section-header">
             <h2>최근 활동</h2>
 
             <button type="button" onClick={() => navigate('/record')}>
-              전체 보기
-              <span>›</span>
+              전체 보기 <span>›</span>
             </button>
           </div>
 
           <div className="main-page__activity-list">
             {homeData.recentActivities.length > 0 ? (
               homeData.recentActivities.map((activity, index) => {
-                const display = missionDisplayMap[activity.missionName]
+                const display = missionDesignData.find(
+                  (item) => item.missionId === activity.missionId,
+                )
 
                 return (
                   <button
@@ -443,17 +424,22 @@ function MainPage() {
                     onClick={() => navigate('/record')}
                   >
                     <div className="main-page__activity-icon">
-                      <img src={display?.image ?? '/tumbler.svg'} alt="" />
+                      <img
+                        src={display?.image ?? '/profile-character.svg'}
+                        alt=""
+                      />
                     </div>
 
                     <div className="main-page__activity-info">
                       <strong>{display?.title ?? activity.missionName}</strong>
 
-                      <span>탄소 감축 실천</span>
+                      <span>{activity.partnerName}</span>
                     </div>
 
                     <div className="main-page__activity-point">
-                      <strong>+{activity.carbonReductionG}g</strong>
+                      <strong>
+                        +{activity.earnedPoints.toLocaleString()}P
+                      </strong>
 
                       <span>{formatCompletedAt(activity.completedAt)}</span>
                     </div>
@@ -461,7 +447,7 @@ function MainPage() {
                 )
               })
             ) : (
-              <p>아직 최근 활동이 없어요.</p>
+              <p className="main-page__empty">아직 최근 활동이 없어요.</p>
             )}
           </div>
         </section>
