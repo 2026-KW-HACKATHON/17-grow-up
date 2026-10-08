@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,6 +32,7 @@ import lombok.NoArgsConstructor;
 public class User {
 
     private static final long SEOUL_PAY_POINT_UNIT = 10_000L;
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -114,7 +116,7 @@ public class User {
     }
 
     public void updateLastActiveAt() {
-        this.lastActiveAt = LocalDateTime.now();
+        this.lastActiveAt = LocalDateTime.now(KST_ZONE_ID);
     }
 
     public void completeMission(
@@ -168,13 +170,13 @@ public class User {
 
     @PrePersist
     private void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(KST_ZONE_ID);
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     private void preUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now(KST_ZONE_ID);
     }
 }

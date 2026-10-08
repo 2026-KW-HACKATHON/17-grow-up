@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "partners")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Partner {
+
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +33,7 @@ public class Partner {
     public static Partner create(String name) {
         Partner partner = new Partner();
         partner.name = name;
-        partner.createdAt = LocalDateTime.now();
+        partner.createdAt = LocalDateTime.now(KST_ZONE_ID);
         return partner;
     }
 }

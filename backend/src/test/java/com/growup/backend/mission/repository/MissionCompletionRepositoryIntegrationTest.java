@@ -10,6 +10,8 @@ import com.growup.backend.user.domain.CharacterType;
 import com.growup.backend.user.domain.User;
 import com.growup.backend.user.repository.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 class MissionCompletionRepositoryIntegrationTest {
 
     private static final LocalDate COMPLETED_DATE = LocalDate.of(2026, 10, 2);
+    private static final ZoneId KST_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     @Autowired
     private MissionCompletionRepository missionCompletionRepository;
@@ -46,16 +49,21 @@ class MissionCompletionRepositoryIntegrationTest {
     void savesMissionCompletion() {
         User user = saveUser("user1", "INVITE01");
         Mission mission = saveMission("텀블러 사용");
+        LocalDateTime beforeSave = LocalDateTime.now(KST_ZONE_ID);
 
         MissionCompletion completion = missionCompletionRepository.saveAndFlush(
                 MissionCompletion.create(user, mission, COMPLETED_DATE)
         );
+        LocalDateTime afterSave = LocalDateTime.now(KST_ZONE_ID);
 
         assertThat(completion.getId()).isNotNull();
         assertThat(completion.getUser().getId()).isEqualTo(user.getId());
         assertThat(completion.getMission().getId()).isEqualTo(mission.getId());
         assertThat(completion.getCompletedDate()).isEqualTo(COMPLETED_DATE);
-        assertThat(completion.getCompletedAt()).isNotNull();
+        assertThat(completion.getCompletedAt()).isBetween(
+                beforeSave.minusSeconds(1),
+                afterSave.plusSeconds(1)
+        );
         assertThat(missionCompletionRepository
                 .existsByUserIdAndMissionIdAndCompletedDate(
                         user.getId(),
