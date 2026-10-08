@@ -1,44 +1,55 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-export interface HomeCharacter {
+export interface HomeCharacterGrowth {
   characterType: string
-  characterLevel: number
+  level: number
+  progressPercent: number
+  remainingCarbonG: number
+}
+
+export interface HomeWeeklyPractice {
+  date: string
+  completed: boolean
+}
+
+export interface HomeStreak {
+  currentStreak: number
+  weeklyPractices: HomeWeeklyPractice[]
 }
 
 export interface HomeMission {
   missionId: number
-  name: string
+  missionName: string
   category: string
   carbonReductionG: number
+  rewardPoints: number
   completedToday: boolean
 }
 
-export interface HomeRecentActivity {
+export interface HomeActivity {
   missionId: number
   missionName: string
-  carbonReductionG: number
+  partnerName: string
+  earnedPoints: number
   completedAt: string
 }
 
 export interface HomeData {
-  character: HomeCharacter
+  characterGrowth: HomeCharacterGrowth
   availablePoints: number
   totalCarbonG: number
-  currentStreak: number
-  weeklyPracticeDays: string[]
+  streak: HomeStreak
   todayMissions: HomeMission[]
-  recentActivities: HomeRecentActivity[]
-}
-
-interface ApiError {
-  code: string
-  message: string
+  recentActivities: HomeActivity[]
 }
 
 interface HomeResponse {
   success: boolean
   data?: HomeData
-  error?: ApiError
+  error?: {
+    code: string
+    message: string
+  }
 }
 
 export async function getHome(accessToken: string): Promise<HomeData> {
@@ -52,12 +63,8 @@ export async function getHome(accessToken: string): Promise<HomeData> {
   const result: HomeResponse = await response.json()
 
   if (!response.ok || !result.success || !result.data) {
-    console.error('홈 화면 조회 실패:', response.status, result.error)
-
-    throw new Error(result.error?.code ?? 'HOME_FETCH_FAILED')
+    throw new Error(result.error?.message ?? '홈 정보를 불러오지 못했습니다.')
   }
-
-  console.log('홈 화면 조회 성공:', response.status, result.data)
 
   return result.data
 }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import BottomNav from '../../components/BottomNav/BottomNav'
 import { getMyGrowth } from '../../api/growth'
 import type { GrowthData } from '../../api/growth'
+
 import './CharacterGrowthPage.css'
 
 type CharacterType =
@@ -32,6 +34,7 @@ const chartColors: Record<string, string> = {
   'no-disposable': '#ab70f8',
 }
 
+// 캐릭터 이미지
 function getCharacterImage(type: CharacterType, level: number) {
   if (level === 1) {
     return '/init-character.svg'
@@ -41,7 +44,6 @@ function getCharacterImage(type: CharacterType, level: number) {
 }
 
 // 백엔드 캐릭터 타입과 프론트 캐릭터 타입 연결
-// 실제 TREE_A ~ TREE_E 매핑은 백엔드와 확인 필요
 const characterTypeMap: Record<string, CharacterType> = {
   TREE_A: 'tumbler',
   TREE_B: 'shopping-bag',
@@ -50,15 +52,31 @@ const characterTypeMap: Record<string, CharacterType> = {
   TREE_E: 'container',
 }
 
-// 백엔드 미션 이름을 프론트 ID와 연결
+// 미션 이름으로 차트 ID 찾기
 function getMissionId(name: string): string {
-  if (name.includes('텀블러')) return 'tumbler'
-  if (name.includes('장바구니')) return 'shopping-bag'
-  if (name.includes('다회용기')) return 'container'
+  if (name.includes('텀블러')) {
+    return 'tumbler'
+  }
+
+  if (name.includes('장바구니')) {
+    return 'shopping-bag'
+  }
+
+  if (name.includes('다회용기')) {
+    return 'container'
+  }
+
   if (name.includes('음식') || name.includes('잔반')) {
     return 'empty-plate'
   }
-  if (name.includes('일회용품')) return 'no-disposable'
+
+  if (
+    name.includes('일회용품') ||
+    name.includes('일회용 수저') ||
+    name.includes('빨대')
+  ) {
+    return 'no-disposable'
+  }
 
   return 'unknown'
 }
@@ -96,7 +114,7 @@ function CharacterGrowthPage() {
       }
     }
 
-    fetchGrowth()
+    void fetchGrowth()
 
     return () => {
       active = false
@@ -109,6 +127,7 @@ function CharacterGrowthPage() {
         <main className="growth-page__content">
           <p>성장 정보를 불러오는 중...</p>
         </main>
+
         <BottomNav active="home" />
       </div>
     )
@@ -119,10 +138,12 @@ function CharacterGrowthPage() {
       <div className="growth-page">
         <main className="growth-page__content">
           <p>{error ?? '성장 정보가 없습니다.'}</p>
+
           <button type="button" onClick={() => window.location.reload()}>
             다시 시도
           </button>
         </main>
+
         <BottomNav active="home" />
       </div>
     )
@@ -140,10 +161,12 @@ function CharacterGrowthPage() {
 
   // 탄소 감축량 및 성장률
   const currentCarbon = growth.totalCarbonG
+
   const remainingCarbon = growth.remainingCarbonG
+
   const progress = Math.min(100, Math.max(0, growth.progressPercent))
 
-  // 미션 통계 변환
+  // 미션 통계
   const missionStats: MissionStat[] = growth.missionStats.map((mission) => {
     const id = getMissionId(mission.missionName)
 
@@ -189,6 +212,7 @@ function CharacterGrowthPage() {
   return (
     <div className="growth-page">
       <main className="growth-page__content">
+        {/* 캐릭터 이미지 영역 */}
         <section className="growth-page__hero">
           <button
             type="button"
@@ -212,6 +236,7 @@ function CharacterGrowthPage() {
           />
         </section>
 
+        {/* 성장 정보 */}
         <section className="growth-page__sheet">
           <div className="growth-page__level-badge">Lv. {currentLevel}</div>
 
@@ -222,6 +247,7 @@ function CharacterGrowthPage() {
             를 줄였어요!
           </p>
 
+          {/* 성장 진행률 */}
           <div className="growth-page__progress-section">
             <div className="growth-page__progress-row">
               <strong>Lv. {currentLevel}</strong>
@@ -229,7 +255,9 @@ function CharacterGrowthPage() {
               <div className="growth-page__progress-bar">
                 <div
                   className="growth-page__progress-value"
-                  style={{ width: `${progress}%` }}
+                  style={{
+                    width: `${progress}%`,
+                  }}
                 />
 
                 <span className="growth-page__progress-percent">
@@ -240,7 +268,9 @@ function CharacterGrowthPage() {
                   className="growth-page__sprout"
                   src="/carbon-icon-white.svg"
                   alt=""
-                  style={{ left: `${progress}%` }}
+                  style={{
+                    left: `${progress}%`,
+                  }}
                 />
               </div>
 
@@ -249,11 +279,12 @@ function CharacterGrowthPage() {
 
             <p>
               다음 성장까지{' '}
-              <strong>{(remainingCarbon / 1000).toFixed(1)}kgCO₂e</strong>
+              <strong>{(remainingCarbon / 1000).toFixed(1)}kgCO₂e</strong>{' '}
               남았어요
             </p>
           </div>
 
+          {/* 미션별 실천 현황 */}
           <section className="growth-page__status">
             <h2>
               <img
@@ -267,17 +298,23 @@ function CharacterGrowthPage() {
             <div className="growth-page__status-content">
               <div
                 className="growth-page__chart"
-                style={{ background: chartBackground }}
+                style={{
+                  background: chartBackground,
+                }}
               >
                 {chartSegments.map((mission, index) => {
-                  if (mission.percent <= 0) return null
+                  if (mission.percent <= 0) {
+                    return null
+                  }
 
                   const angle = (mission.middle / 100) * 360
+
                   const radian = (angle * Math.PI) / 180
 
                   const radius = 38
 
                   const left = 50 + radius * Math.sin(radian)
+
                   const top = 50 - radius * Math.cos(radian)
 
                   return (
@@ -296,10 +333,12 @@ function CharacterGrowthPage() {
 
                 <div className="growth-page__chart-hole">
                   <span>총 실천 횟수</span>
+
                   <strong>{totalCount}회</strong>
                 </div>
               </div>
 
+              {/* 미션별 범례 */}
               <div className="growth-page__legend">
                 {missionStats.map((mission, index) => (
                   <div
@@ -315,6 +354,7 @@ function CharacterGrowthPage() {
 
                     <div>
                       <strong>{mission.name}</strong>
+
                       <span>{mission.count}회</span>
                     </div>
 
@@ -328,6 +368,11 @@ function CharacterGrowthPage() {
               </div>
             </div>
           </section>
+
+          {/* 하단 안내 문구 - 이미지 없이 텍스트만 */}
+          <div className="growth-page__recommend">
+            <p>더 많은 실천이 필요해요!</p>
+          </div>
         </section>
       </main>
 
