@@ -44,9 +44,7 @@ interface AddFriendApiResponse {
 
 interface DeleteFriendResponse {
   success: boolean
-  data?: {
-    friendId: number
-  }
+  data?: null
   error?: ApiError
 }
 
@@ -121,9 +119,9 @@ export async function deleteFriend(
 
   const result: DeleteFriendResponse = await response.json()
 
-  if (!response.ok || !result.success || !result.data) {
+  if (!response.ok || !result.success) {
     throw new Error(result.error?.code ?? 'FRIEND_DELETE_FAILED')
   }
 
-  return result.data.friendId
+  return friendId
 }

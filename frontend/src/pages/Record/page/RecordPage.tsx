@@ -66,7 +66,27 @@ function RecordPage() {
           ])
 
         setSummary(summaryData)
-        setHistories(historyData)
+        const monthlyHistories = historyData.filter((history) => {
+          const date = new Date(history.completedAt)
+
+          const year = Number(
+            new Intl.DateTimeFormat('en-US', {
+              timeZone: 'Asia/Seoul',
+              year: 'numeric',
+            }).format(date),
+          )
+
+          const month = Number(
+            new Intl.DateTimeFormat('en-US', {
+              timeZone: 'Asia/Seoul',
+              month: 'numeric',
+            }).format(date),
+          )
+
+          return year === YEAR && month === MONTH
+        })
+
+        setHistories(monthlyHistories)
         setPracticeDays(calendarData.practiceDays)
         setFriends(friendData)
       } catch (error) {

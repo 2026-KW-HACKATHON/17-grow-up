@@ -59,15 +59,9 @@ function SeoulPayPage() {
         error.message === 'VALIDATION_ERROR'
       ) {
         alert('전환할 포인트를 확인해 주세요.')
-      } else if (
-        error instanceof Error &&
-        error.message === 'UNAUTHORIZED'
-      ) {
+      } else if (error instanceof Error && error.message === 'UNAUTHORIZED') {
         alert('로그인이 필요합니다.')
-      } else if (
-        error instanceof Error &&
-        error.message === 'FORBIDDEN'
-      ) {
+      } else if (error instanceof Error && error.message === 'FORBIDDEN') {
         alert('서울페이 전환 권한이 없습니다.')
       } else {
         alert('서울페이 전환에 실패했습니다.')
